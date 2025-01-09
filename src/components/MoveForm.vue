@@ -1,12 +1,37 @@
 <script setup>
-defineProps({
-  letter: String,
-  height: Number,
+import { ref } from 'vue'
+import { PlayDirection } from 'upwords-toolkit'
+
+const emit = defineEmits({
+  play: (p) => {
+    return (
+      [PlayDirection.Horizontal, PlayDirection.Vertical].includes(p.direction) && p.tiles && p.start
+    )
+  },
 })
+
+const word = ref('HELLO')
+const startX = ref(4)
+const startY = ref(3)
+const direction = ref('horizontal')
+
+function makePlay(tiles, start, direction) {
+  return { tiles, start, direction }
+}
+
+function onSubmit() {
+  const play = makePlay(
+    word.value.toUpperCase(),
+    [startX.value, startY.value],
+    direction.value === 'horizontal' ? PlayDirection.Horizontal : PlayDirection.Vertical,
+  )
+  word.value = ''
+  emit('play', play)
+}
 </script>
 
 <template>
-  <form v-on:submit.prevent="playMove" class="container mx-auto">
+  <form @submit.prevent="onSubmit" class="container mx-auto">
     <div class="py-2">
       <label for="word">Word: </label>
       <input name="word" type="text" v-model="word" class="border border-gray-500" />

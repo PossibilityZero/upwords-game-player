@@ -9,11 +9,5 @@ export default {
     {
       pattern: /text-(red|green|blue|gray)-\d*/,
     },
-    {
-      pattern: /border-gray-\d*/,
-    },
-    {
-      pattern: /border.*/,
-    },
   ],
 }

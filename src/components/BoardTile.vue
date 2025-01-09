@@ -2,13 +2,25 @@
 defineProps({
   letter: String,
   height: Number,
+  active: Boolean,
+  temp: Boolean,
 })
 </script>
 
 <template>
   <div
     class="text-center"
-    :class="`border${height === 5 ? '-4' : ''} border-gray-${height > 0 ? 500 : 200}`"
+    :class="`
+      ${active ? 'border-4' : temp ? 'border-2' : 'border'}
+      ${
+        temp
+          ? 'border-green-500'
+          : active && height < 5
+            ? 'border-green-700'
+            : height > 0
+              ? 'border-gray-500'
+              : 'border-gray-200'
+      }`"
   >
     <div class="grid grid-cols-4 grid-rows-4 aspect-square">
       <div
@@ -18,7 +30,7 @@ defineProps({
       </div>
       <span
         class="row-start-1 col-start-4 text-xs font-bold lg:text-sm"
-        :class="`text-gray-${400 + height * 100}`"
+        :class="`${temp ? 'text-green-500' : height >= 5 ? 'text-red-700' : 'text-gray-500'}`"
         >{{ height > 0 ? height : '' }}</span
       >
     </div>
