@@ -24,6 +24,9 @@ for (let i = 0; i < 100; i++) {
     coordString: `coord-${x}-${y}`,
     x,
     y,
+    get currentHeight() {
+      return UBF.getHeightAt(props.board, [x, y])
+    },
     get height() {
       return UBF.getHeightAt(props.board, [x, y]) + (getTempVal() ? 1 : 0)
     },
@@ -92,7 +95,7 @@ function handleBoardInput(key) {
     activateTile(newX, newY)
     return
   } else if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(letter)) {
-    if (activeTile.height < 5 && activeTile.currentLetter !== letter) {
+    if (activeTile.currentHeight < 5 && activeTile.currentLetter !== letter) {
       tempTiles.set(activeTile.coordString, { letter, x: activeTile.x, y: activeTile.y })
       activeTile.key++
     }
