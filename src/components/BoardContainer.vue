@@ -27,6 +27,9 @@ for (let i = 0; i < 100; i++) {
     get height() {
       return UBF.getHeightAt(props.board, [x, y]) + (getTempVal() ? 1 : 0)
     },
+    get currentLetter() {
+      return UBF.getLetterAt(props.board, [x, y])
+    },
     get letter() {
       return getTempVal() || UBF.getLetterAt(props.board, [x, y])
     },
@@ -59,7 +62,11 @@ function handleBoardInput(key) {
 
   const letter = key.toUpperCase()
   if (key === 'Escape') {
-    activeTile.active = false
+    if (tempTiles.size > 0) {
+      tempTiles.clear()
+    } else {
+      activeTile.active = false
+    }
     activeTile.key++
   } else if (key === 'Backspace') {
     tempTiles.delete(activeTile.coordString)
@@ -85,8 +92,10 @@ function handleBoardInput(key) {
     activateTile(newX, newY)
     return
   } else if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(letter)) {
-    tempTiles.set(activeTile.coordString, { letter, x: activeTile.x, y: activeTile.y })
-    activeTile.key++
+    if (activeTile.height < 5 && activeTile.currentLetter !== letter) {
+      tempTiles.set(activeTile.coordString, { letter, x: activeTile.x, y: activeTile.y })
+      activeTile.key++
+    }
   }
 }
 
@@ -110,6 +119,7 @@ defineExpose({
         :letter="tile.letter"
         :active="tile.active"
         :temp="tile.isTemp"
+        :central="[44, 45, 54, 55].includes(index)"
         v-bind:data-tile-num="index"
         v-bind:data-tile-x="xCoord(index)"
         v-bind:data-tile-y="yCoord(index)"

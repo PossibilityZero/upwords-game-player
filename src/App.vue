@@ -13,6 +13,9 @@ const tempTiles = new Map()
 
 function playMove(play) {
   console.log(play)
+  if (!game.checkMove(play).isValid) {
+    return
+  }
   game.playMove(play)
   tiles.value = tileRack1.listTiles()
   boardStateKey.value += 1
@@ -45,7 +48,7 @@ function makePlayFromTempTiles(tempTiles) {
       tiles[tile.x] = tile.letter
     })
   } else {
-    return
+    return null
   }
   play.start = [ordered[0].x, ordered[0].y]
   play.tiles = tiles.join('').trim()
@@ -72,6 +75,8 @@ document.addEventListener('keydown', (e) => {
     }
   }
 })
+
+document.body.classList.add('bg-slate-100')
 </script>
 
 <template>
