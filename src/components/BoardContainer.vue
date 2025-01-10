@@ -1,7 +1,7 @@
 <script setup>
 import BoardTile from './BoardTile.vue'
 import { UBFHelper as UBF } from 'upwords-toolkit'
-import { onUnmounted, reactive } from 'vue'
+import { reactive } from 'vue'
 
 const props = defineProps({
   board: Array,
@@ -51,48 +51,36 @@ function deactivateAllTiles() {
   boardTiles.forEach((tile) => (tile.active = false))
 }
 
-document.addEventListener('keydown', handleKeypressEvent)
-onUnmounted(() => document.removeEventListener('keydown', handleKeypressEvent))
-function handleKeypressEvent(e) {
-  if (e.target.tagName === 'INPUT' || e.metaKey) {
-    return
-  }
+function handleBoardInput(key) {
   const activeTile = boardTiles.find((tile) => tile.active)
   if (!activeTile) {
     return
   }
 
-  const letter = e.key.toUpperCase()
-  if (e.key === 'Escape') {
+  const letter = key.toUpperCase()
+  if (key === 'Escape') {
     activeTile.active = false
     activeTile.key++
-  } else if (e.key === 'Backspace') {
+  } else if (key === 'Backspace') {
     tempTiles.delete(activeTile.coordString)
     activeTile.key++
-  } else if (e.key.startsWith('Arrow')) {
-    e.preventDefault()
+  } else if (key.startsWith('Arrow')) {
     activeTile.active = false
-    let newX, newY
-    switch (e.key) {
+    let newX = activeTile.x
+    let newY = activeTile.y
+    switch (key) {
       case 'ArrowUp':
         newX = Math.max(activeTile.x - 1, 0)
-        newY = activeTile.y
         break
       case 'ArrowDown':
         newX = Math.min(activeTile.x + 1, 9)
-        newY = activeTile.y
         break
       case 'ArrowLeft':
-        newX = activeTile.x
         newY = Math.max(activeTile.y - 1, 0)
         break
       case 'ArrowRight':
-        newX = activeTile.x
         newY = Math.min(activeTile.y + 1, 9)
         break
-      default:
-        newX = activeTile.x
-        newY = activeTile.y
     }
     activateTile(newX, newY)
     return
@@ -101,6 +89,10 @@ function handleKeypressEvent(e) {
     activeTile.key++
   }
 }
+
+defineExpose({
+  handleBoardInput,
+})
 </script>
 
 <template>

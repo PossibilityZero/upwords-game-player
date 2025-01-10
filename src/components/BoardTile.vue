@@ -22,15 +22,15 @@ defineProps({
               : 'border-gray-200'
       }`"
   >
-    <div class="grid grid-cols-4 grid-rows-4 aspect-square">
+    <div class="grid grid-cols-5 grid-rows-5 aspect-square">
       <div
-        class="row-start-2 col-start-1 row-span-3 col-span-3 sm:font-bold align-middle"
+        class="row-start-2 col-start-2 row-span-3 col-span-3 sm:font-bold align-middle"
         :class="`${letter === 'Q' ? 'text-lg sm:text-xl md:text-3xl ' : 'text-xl sm:text-2xl md:text-4xl '}`"
       >
         {{ letter === 'Q' ? 'Qu' : letter }}
       </div>
       <span
-        class="row-start-1 col-start-4 text-xs font-bold lg:text-sm"
+        class="row-start-1 col-start-5 text-xs font-bold lg:text-sm"
         :class="`${temp ? 'text-green-500' : height >= 5 ? 'text-red-700' : 'text-gray-500'}`"
         >{{ height > 0 ? height : '' }}</span
       >
