@@ -24,9 +24,10 @@ defineProps({
   >
     <div class="grid grid-cols-4 grid-rows-4 aspect-square">
       <div
-        class="row-start-2 col-start-1 row-span-3 col-span-3 text-xl sm:text-2xl md:text-4xl sm:font-bold align-middle"
+        class="row-start-2 col-start-1 row-span-3 col-span-3 sm:font-bold align-middle"
+        :class="`${letter === 'Q' ? 'text-lg sm:text-xl md:text-3xl ' : 'text-xl sm:text-2xl md:text-4xl '}`"
       >
-        {{ letter }}
+        {{ letter === 'Q' ? 'Qu' : letter }}
       </div>
       <span
         class="row-start-1 col-start-4 text-xs font-bold lg:text-sm"

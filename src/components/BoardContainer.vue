@@ -1,64 +1,60 @@
 <script setup>
 import BoardTile from './BoardTile.vue'
 import { UBFHelper as UBF } from 'upwords-toolkit'
-import { reactive } from 'vue'
+import { onUnmounted, reactive } from 'vue'
 
 const props = defineProps({
   board: Array,
+  tempTiles: Map,
 })
 
-const tempTiles = new Map()
+let tempTiles = props.tempTiles
 
 const xCoord = (tileNum) => Math.floor(tileNum / 10)
 const yCoord = (tileNum) => tileNum % 10
-const letterAt = (x, y) => {
-  const tempValue = tempTiles.get(`coord-${x}-${y}`)
-  if (tempValue) {
-    return tempValue
-  }
-  return UBF.getLetterAt(props.board, [x, y])
-}
-const heightAt = (x, y) => {
-  if (tempTiles.get(`coord-${x}-${y}`)) {
-    return UBF.getHeightAt(props.board, [x, y]) + 1
-  } else {
-    return UBF.getHeightAt(props.board, [x, y])
-  }
-}
 
 const boardTiles = reactive([])
+const randNum = Math.random()
 for (let i = 0; i < 100; i++) {
   const x = xCoord(i)
   const y = yCoord(i)
+  const getTempVal = () => tempTiles.get(`coord-${x}-${y}`)?.letter
   boardTiles.push({
-    key: i * 0.001,
+    key: i + randNum,
     coordString: `coord-${x}-${y}`,
-    x: xCoord(i),
-    y: yCoord(i),
+    x,
+    y,
     get height() {
-      return heightAt(x, y)
+      return UBF.getHeightAt(props.board, [x, y]) + (getTempVal() ? 1 : 0)
     },
     get letter() {
-      return letterAt(x, y)
+      return getTempVal() || UBF.getLetterAt(props.board, [x, y])
     },
     get isTemp() {
-      return !!tempTiles.get(`coord-${x}-${y}`)
+      return !!getTempVal()
     },
     active: false,
   })
 }
 
-function highlightSquare(e) {
-  deactivateAllSquares()
-  boardTiles[e.currentTarget.dataset.tileNum].active = true
+function selectTile(e) {
+  deactivateAllTiles()
+  activateTile(e.currentTarget.dataset.tileX, e.currentTarget.dataset.tileY)
 }
 
-function deactivateAllSquares() {
-  boardTiles.filter((tile) => tile.active).forEach((tile) => (tile.active = false))
+function activateTile(x, y) {
+  const tileNum = 10 * Number(x) + Number(y)
+  boardTiles[tileNum].active = true
 }
 
-document.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'INPUT') {
+function deactivateAllTiles() {
+  boardTiles.forEach((tile) => (tile.active = false))
+}
+
+document.addEventListener('keydown', handleKeypressEvent)
+onUnmounted(() => document.removeEventListener('keydown', handleKeypressEvent))
+function handleKeypressEvent(e) {
+  if (e.target.tagName === 'INPUT' || e.metaKey) {
     return
   }
   const activeTile = boardTiles.find((tile) => tile.active)
@@ -66,9 +62,7 @@ document.addEventListener('keydown', (e) => {
     return
   }
 
-  console.log(e)
   const letter = e.key.toUpperCase()
-
   if (e.key === 'Escape') {
     activeTile.active = false
     activeTile.key++
@@ -100,15 +94,13 @@ document.addEventListener('keydown', (e) => {
         newX = activeTile.x
         newY = activeTile.y
     }
-    console.log(newX, newY)
-    const newTile = boardTiles.find((tile) => tile.x === newX && tile.y === newY)
-    newTile.active = true
+    activateTile(newX, newY)
     return
   } else if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(letter)) {
-    tempTiles.set(activeTile.coordString, letter)
+    tempTiles.set(activeTile.coordString, { letter, x: activeTile.x, y: activeTile.y })
     activeTile.key++
   }
-})
+}
 </script>
 
 <template>
@@ -119,7 +111,7 @@ document.addEventListener('keydown', (e) => {
     <div class="grid grid-cols-10 grid-rows-10 gap-1 aspect-square content-between">
       <BoardTile
         v-for="(tile, index) in boardTiles"
-        @click="highlightSquare"
+        @click="selectTile"
         :id="`coord-${xCoord(index)}-${yCoord(index)}`"
         :key="tile.key"
         :height="tile.height"
@@ -127,6 +119,8 @@ document.addEventListener('keydown', (e) => {
         :active="tile.active"
         :temp="tile.isTemp"
         v-bind:data-tile-num="index"
+        v-bind:data-tile-x="xCoord(index)"
+        v-bind:data-tile-y="yCoord(index)"
       />
     </div>
   </div>
