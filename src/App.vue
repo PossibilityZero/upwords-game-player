@@ -5,7 +5,8 @@ import TileBagContainer from './components/TileBagContainer.vue'
 import { ref, reactive } from 'vue'
 import { PlayDirection, UpwordsGame } from 'upwords-toolkit'
 
-const game = new UpwordsGame(1)
+const manualTiles = true
+const game = new UpwordsGame(1, manualTiles)
 const tileRack1 = game.getTiles(0)
 const boardStateKey = ref(0)
 const tileBagKey = ref(0)
@@ -20,16 +21,33 @@ function populateRackTiles(rack, tileRack) {
 }
 populateRackTiles(rackTiles, tileRack1)
 
+function manualDrawTiles(play) {
+  return game.drawSpecificTiles(game.currentPlayer, play.tiles)
+}
+
 function playMove(play) {
   console.log(play)
+  if (manualTiles) {
+    const canDraw = manualDrawTiles(play)
+    if (!canDraw) {
+      console.log('not enough tiles')
+      return
+    }
+  }
   if (!game.checkMove(play).isValid) {
+    console.log(game.checkMove(play))
+    if (manualTiles) {
+      game.returnSpecificTiles(game.currentPlayer, play.tiles)
+    }
     return
   }
   game.playMove(play)
   boardStateKey.value += 1
   tileBagKey.value += 1
   tempTiles.clear()
-  populateRackTiles(rackTiles, tileRack1)
+  if (!manualTiles) {
+    populateRackTiles(rackTiles, tileRack1)
+  }
 }
 
 function makePlayFromTempTiles(tempTiles) {
