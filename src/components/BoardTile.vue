@@ -14,10 +14,25 @@ function borderColor(active, temp, height) {
   } else if (temp) {
     return 'border-green-500'
   } else if (height > 0) {
-    return 'border-gray-500'
+    switch (height) {
+      case 1:
+        return 'border-gray-400'
+      case 2:
+        return 'border-gray-400'
+      case 3:
+        return 'border-gray-500'
+      case 4:
+        return 'border-gray-700'
+      case 5:
+        return 'border-gray-900'
+    }
   } else {
     return 'border-transparent'
   }
+}
+
+function borderStyle(height) {
+  return height > 0 ? 'rounded md:rounded-lg' : ''
 }
 
 function borderColorOuter(active, temp, height) {
@@ -30,17 +45,17 @@ function borderColorOuter(active, temp, height) {
 
 function tileShadow(height, active) {
   if (active) {
-    return 'z-30 shadow-md shadow-blue-600'
+    return 'z-30 shadow-blue-600 shadow-[0_0px_8px_-2px]'
   }
   switch (height) {
     case 1:
-      return 'shadow-sm shadow-gray-200'
+      return 'shadow-sm shadow-gray-100'
     case 2:
-      return 'shadow-sm shadow-gray-400'
+      return 'shadow shadow-gray-400'
     case 3:
       return 'shadow shadow-gray-500'
     case 4:
-      return 'shadow shadow-gray-600'
+      return 'shadow shadow-gray-700'
     case 5:
       return 'shadow-md shadow-gray-800'
     default:
@@ -93,9 +108,10 @@ function arrowDown(active, horizontal) {
     class="text-center border"
     :class="`
       ${tileShadow(height, active)}
+      ${borderStyle(height)}
       ${borderColorOuter(active, temp, height)}`"
   >
-    <div class="border-2" :class="`${borderColor(active, temp, height)}`">
+    <div class="border-2" :class="`${borderStyle(height)} ${borderColor(active, temp, height)}`">
       <div class="grid grid-cols-5 grid-rows-5 aspect-square">
         <div
           class="row-start-2 col-start-2 row-span-3 col-span-3 align-middle"
