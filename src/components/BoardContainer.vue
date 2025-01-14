@@ -61,6 +61,26 @@ function deactivateAllTiles() {
   boardTiles.forEach((tile) => (tile.active = false))
 }
 
+function moveActiveTileLeft(activeTile) {
+  activeTile.active = false
+  activateTile(activeTile.x, Math.max(activeTile.y - 1, 0))
+}
+
+function moveActiveTileRight(activeTile) {
+  activeTile.active = false
+  activateTile(activeTile.x, Math.min(activeTile.y + 1, 9))
+}
+
+function moveActiveTileUp(activeTile) {
+  activeTile.active = false
+  activateTile(Math.max(activeTile.x - 1, 0), activeTile.y)
+}
+
+function moveActiveTileDown(activeTile) {
+  activeTile.active = false
+  activateTile(Math.min(activeTile.x + 1, 9), activeTile.y)
+}
+
 function handleBoardInput(key) {
   const activeTile = boardTiles.find((tile) => tile.active)
   if (!activeTile) {
@@ -69,75 +89,37 @@ function handleBoardInput(key) {
 
   const letter = key.toUpperCase()
   if (key === 'Escape') {
-    if (tempTiles.size > 0) {
-      tempTiles.clear()
-    } else {
-      activeTile.active = false
-    }
-    activeTile.key++
+    tempTiles.size > 0 ? tempTiles.clear() : deactivateAllTiles()
+  } else if (key === 'Tab') {
+    inputDirection = inputDirection === HORZ ? VERT : HORZ
   } else if (key === 'Backspace') {
     tempTiles.delete(activeTile.coordString)
-    activeTile.key++
-    if (inputDirection === HORZ) {
-      activeTile.active = false
-      const newY = Math.max(activeTile.y - 1, 0)
-      activateTile(activeTile.x, newY)
-    } else {
-      activeTile.active = false
-      const newX = Math.max(activeTile.x - 1, 0)
-      activateTile(newX, activeTile.y)
-    }
+    inputDirection === HORZ ? moveActiveTileLeft(activeTile) : moveActiveTileUp(activeTile)
   } else if (key.startsWith('Arrow')) {
-    activeTile.active = false
-    let newX = activeTile.x
-    let newY = activeTile.y
     switch (key) {
       case 'ArrowUp':
-        newX = Math.max(activeTile.x - 1, 0)
+        moveActiveTileUp(activeTile)
         break
       case 'ArrowDown':
-        newX = Math.min(activeTile.x + 1, 9)
+        moveActiveTileDown(activeTile)
         break
       case 'ArrowLeft':
-        newY = Math.max(activeTile.y - 1, 0)
+        moveActiveTileLeft(activeTile)
         break
       case 'ArrowRight':
-        newY = Math.min(activeTile.y + 1, 9)
+        moveActiveTileRight(activeTile)
         break
     }
-    activateTile(newX, newY)
-    return
   } else if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(letter)) {
     if (activeTile.currentHeight < 5 && activeTile.currentLetter !== letter) {
       tempTiles.set(activeTile.coordString, { letter, x: activeTile.x, y: activeTile.y })
-      activeTile.key++
-      activeTile.active = false
-      if (inputDirection === HORZ) {
-        const newX = activeTile.x
-        const newY = Math.min(activeTile.y + 1, 9)
-        activateTile(newX, newY)
-      } else {
-        const newX = Math.min(activeTile.x + 1, 9)
-        const newY = activeTile.y
-        activateTile(newX, newY)
-      }
+      inputDirection === HORZ ? moveActiveTileRight(activeTile) : moveActiveTileDown(activeTile)
     } else if (activeTile.currentLetter === letter) {
       tempTiles.delete(activeTile.coordString)
-      activeTile.active = false
-      if (inputDirection === HORZ) {
-        const newX = activeTile.x
-        const newY = Math.min(activeTile.y + 1, 9)
-        activateTile(newX, newY)
-      } else {
-        const newX = Math.min(activeTile.x + 1, 9)
-        const newY = activeTile.y
-        activateTile(newX, newY)
-      }
+      inputDirection === HORZ ? moveActiveTileRight(activeTile) : moveActiveTileDown(activeTile)
     }
-  } else if (key === 'Tab') {
-    inputDirection = inputDirection === HORZ ? VERT : HORZ
-    activeTile.key++
   }
+  activeTile.key++
 }
 
 defineExpose({
