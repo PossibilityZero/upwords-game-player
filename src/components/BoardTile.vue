@@ -1,5 +1,5 @@
 <script setup>
-const props = defineProps({
+defineProps({
   letter: String,
   height: Number,
   active: Boolean,
