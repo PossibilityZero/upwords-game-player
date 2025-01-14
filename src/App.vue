@@ -1,15 +1,24 @@
 <script setup>
 import BoardContainer from './components/BoardContainer.vue'
+import BoardTile from './components/BoardTile.vue'
 import TileBagContainer from './components/TileBagContainer.vue'
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { PlayDirection, UpwordsGame } from 'upwords-toolkit'
 
 const game = new UpwordsGame(1)
 const tileRack1 = game.getTiles(0)
-const tiles = ref(tileRack1.listTiles())
 const boardStateKey = ref(0)
 const tileBagKey = ref(0)
 const tempTiles = new Map()
+
+const rackTiles = reactive([])
+function populateRackTiles(rack, tileRack) {
+  rack.length = 0
+  ;[...tileRack.listTiles()].forEach((letter) => {
+    rack.push({ key: Math.random(), letter: letter[0] })
+  })
+}
+populateRackTiles(rackTiles, tileRack1)
 
 function playMove(play) {
   console.log(play)
@@ -17,10 +26,10 @@ function playMove(play) {
     return
   }
   game.playMove(play)
-  tiles.value = tileRack1.listTiles()
   boardStateKey.value += 1
   tileBagKey.value += 1
   tempTiles.clear()
+  populateRackTiles(rackTiles, tileRack1)
 }
 
 function makePlayFromTempTiles(tempTiles) {
@@ -92,8 +101,16 @@ document.body.classList.add('bg-slate-100')
       :tempTiles="tempTiles"
       ref="boardContainerRef"
     />
-    <div id="tileRack" class="container mx-auto">
-      <p class="text-4xl"><span>Tiles: </span>{{ tiles }}</p>
+    <div id="tileRack" class="container mx-auto my-2 w-1/2 max-w-lg min-w-64">
+      <div class="grid grid-cols-7 grid-rows-1 gap-1 content-between">
+        <BoardTile
+          v-for="(tile, index) in rackTiles"
+          :id="`rack-tile-${index}`"
+          :key="tile.key"
+          :height="1"
+          :letter="tile.letter"
+        />
+      </div>
     </div>
     <TileBagContainer v-bind:key="tileBagKey" :tileBag="game.getTileBag()" />
   </main>
