@@ -3,12 +3,16 @@ import BoardTile from './BoardTile.vue'
 import { UBFHelper as UBF } from 'upwords-toolkit'
 import { reactive } from 'vue'
 
+const HORZ = Symbol('horizontal')
+const VERT = Symbol('vertical')
+
 const props = defineProps({
   board: Array,
   tempTiles: Map,
 })
 
 let tempTiles = props.tempTiles
+let inputDirection = HORZ
 
 const xCoord = (tileNum) => Math.floor(tileNum / 10)
 const yCoord = (tileNum) => tileNum % 10
@@ -20,7 +24,7 @@ for (let i = 0; i < 100; i++) {
   const y = yCoord(i)
   const getTempVal = () => tempTiles.get(`coord-${x}-${y}`)?.letter
   boardTiles.push({
-    key: i + randNum,
+    key: (i * randNum) % 1,
     coordString: `coord-${x}-${y}`,
     x,
     y,
@@ -74,6 +78,15 @@ function handleBoardInput(key) {
   } else if (key === 'Backspace') {
     tempTiles.delete(activeTile.coordString)
     activeTile.key++
+    if (inputDirection === HORZ) {
+      activeTile.active = false
+      const newY = Math.max(activeTile.y - 1, 0)
+      activateTile(activeTile.x, newY)
+    } else {
+      activeTile.active = false
+      const newX = Math.max(activeTile.x - 1, 0)
+      activateTile(newX, activeTile.y)
+    }
   } else if (key.startsWith('Arrow')) {
     activeTile.active = false
     let newX = activeTile.x
@@ -98,7 +111,32 @@ function handleBoardInput(key) {
     if (activeTile.currentHeight < 5 && activeTile.currentLetter !== letter) {
       tempTiles.set(activeTile.coordString, { letter, x: activeTile.x, y: activeTile.y })
       activeTile.key++
+      activeTile.active = false
+      if (inputDirection === HORZ) {
+        const newX = activeTile.x
+        const newY = Math.min(activeTile.y + 1, 9)
+        activateTile(newX, newY)
+      } else {
+        const newX = Math.min(activeTile.x + 1, 9)
+        const newY = activeTile.y
+        activateTile(newX, newY)
+      }
+    } else if (activeTile.currentLetter === letter) {
+      tempTiles.delete(activeTile.coordString)
+      activeTile.active = false
+      if (inputDirection === HORZ) {
+        const newX = activeTile.x
+        const newY = Math.min(activeTile.y + 1, 9)
+        activateTile(newX, newY)
+      } else {
+        const newX = Math.min(activeTile.x + 1, 9)
+        const newY = activeTile.y
+        activateTile(newX, newY)
+      }
     }
+  } else if (key === 'Tab') {
+    inputDirection = inputDirection === HORZ ? VERT : HORZ
+    activeTile.key++
   }
 }
 
@@ -122,6 +160,7 @@ defineExpose({
         :letter="tile.letter"
         :active="tile.active"
         :temp="tile.isTemp"
+        :inputHorizontal="inputDirection === HORZ"
         :central="[44, 45, 54, 55].includes(index)"
         v-bind:data-tile-num="index"
         v-bind:data-tile-x="xCoord(index)"

@@ -82,6 +82,9 @@ document.addEventListener('keydown', (e) => {
     if (play) {
       playMove(play)
     }
+  } else if (e.key === 'Tab') {
+    e.preventDefault()
+    boardContainerRef.value.handleBoardInput(e.key)
   }
 })
 

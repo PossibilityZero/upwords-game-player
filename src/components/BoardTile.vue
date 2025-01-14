@@ -1,10 +1,11 @@
 <script setup>
-defineProps({
+const props = defineProps({
   letter: String,
   height: Number,
   active: Boolean,
   central: Boolean,
   temp: Boolean,
+  inputHorizontal: Boolean,
 })
 
 function borderColor(active, temp, height) {
@@ -29,7 +30,7 @@ function borderColorOuter(active, temp, height) {
 
 function tileShadow(height, active) {
   if (active) {
-    return 'shadow-md shadow-blue-600'
+    return 'z-30 shadow-md shadow-blue-600'
   }
   switch (height) {
     case 1:
@@ -73,6 +74,18 @@ function heightIndicatorColor(height, temp) {
     return 'text-gray-500'
   }
 }
+
+function arrowRight(active, horizontal) {
+  if (!active || !horizontal) {
+    return 'hidden'
+  }
+}
+
+function arrowDown(active, horizontal) {
+  if (!active || horizontal) {
+    return 'hidden'
+  }
+}
 </script>
 
 <template>
@@ -90,11 +103,41 @@ function heightIndicatorColor(height, temp) {
         >
           {{ height === 0 && central ? '·' : letter === 'Q' ? 'Qu' : letter }}
         </div>
-        <span
+        <div
           class="row-start-1 col-start-5 text-xs md:font-bold lg:text-sm"
           :class="heightIndicatorColor(height, temp)"
-          >{{ height > 0 ? height : '' }}</span
         >
+          {{ height > 0 ? height : '' }}
+        </div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          fill="rgb(150 150 150)"
+          stroke="rgb(150 150 150)"
+          class="row-start-5 col-start-5 size-4"
+          :class="arrowRight(active, inputHorizontal)"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M2 8a.75.75 0 0 1 .75-.75h8.69L8.22 4.03a.75.75 0 0 1 1.06-1.06l4.5 4.5a.75.75 0 0 1 0 1.06l-4.5 4.5a.75.75 0 0 1-1.06-1.06l3.22-3.22H2.75A.75.75 0 0 1 2 8Z"
+            clip-rule="evenodd"
+          />
+        </svg>
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          fill="rgb(150 150 150)"
+          stroke="rgb(150 150 150)"
+          class="row-start-5 col-start-5 size-4"
+          :class="arrowDown(active, inputHorizontal)"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M8 2a.75.75 0 0 1 .75.75v8.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.22 3.22V2.75A.75.75 0 0 1 8 2Z"
+            clip-rule="evenodd"
+          />
+        </svg>
       </div>
     </div>
   </div>
