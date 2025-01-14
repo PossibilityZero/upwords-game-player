@@ -93,8 +93,12 @@ function handleBoardInput(key) {
   } else if (key === 'Tab') {
     inputDirection = inputDirection === HORZ ? VERT : HORZ
   } else if (key === 'Backspace') {
-    tempTiles.delete(activeTile.coordString)
-    inputDirection === HORZ ? moveActiveTileLeft(activeTile) : moveActiveTileUp(activeTile)
+    if (tempTiles.has(activeTile.coordString)) {
+      tempTiles.delete(activeTile.coordString)
+    } else {
+      inputDirection === HORZ ? moveActiveTileLeft(activeTile) : moveActiveTileUp(activeTile)
+      tempTiles.delete(boardTiles.find((tile) => tile.active).coordString)
+    }
   } else if (key.startsWith('Arrow')) {
     switch (key) {
       case 'ArrowUp':
