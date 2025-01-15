@@ -11,6 +11,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "upwords-solver": "^0.1.0",
     "upwords-toolkit": "^0.1.18",
     "vue": "^3.5.13"
   },

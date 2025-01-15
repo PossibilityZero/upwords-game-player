@@ -1,11 +1,39 @@
 <script setup>
 import BoardContainer from './components/BoardContainer.vue'
-import BoardTile from './components/BoardTile.vue'
 import TileBagContainer from './components/TileBagContainer.vue'
+import TileRack from './components/TileRack.vue'
+import PlaysList from './components/PlaysList.vue'
 import { ref, reactive } from 'vue'
-import { PlayDirection, UpwordsGame } from 'upwords-toolkit'
+import { PlayDirection, UBFHelper, UpwordsBoard, UpwordsGame } from 'upwords-toolkit'
+import { UpwordsWordFinder } from 'upwords-solver'
+import { wordList } from './wordList'
 
-const manualTiles = true
+UpwordsWordFinder.init(wordList)
+
+const validPlays = reactive([])
+function findPlays() {
+  validPlays.length = 0
+  const ubf = game.getUBF()
+  const board = new UpwordsBoard(wordList, ubf)
+  UpwordsWordFinder.findAllPossiblePlays(board.getUBF(), game.getTiles(0))
+    .map((play) => ({
+      play,
+      status: board.checkPlay(play),
+      numTiles: [...play.tiles].filter((t) => t !== ' ').length,
+    }))
+    .filter((p) => p.status.isValid)
+    .map((p) => ({
+      tiles: p.play.tiles,
+      start: p.play.start,
+      direction: p.play.direction,
+      points: p.status.points,
+      numTiles: p.numTiles,
+    }))
+    .toSorted((a, b) => b.points - a.points)
+    .forEach((p) => validPlays.push(p))
+}
+
+const manualTiles = false
 const game = new UpwordsGame(1, manualTiles)
 const tileRack1 = game.getTiles(0)
 const boardStateKey = ref(0)
@@ -20,6 +48,8 @@ function populateRackTiles(rack, tileRack) {
   })
 }
 populateRackTiles(rackTiles, tileRack1)
+
+findPlays()
 
 function manualDrawTiles(play) {
   return game.drawSpecificTiles(game.currentPlayer, play.tiles)
@@ -48,6 +78,7 @@ function playMove(play) {
   if (!manualTiles) {
     populateRackTiles(rackTiles, tileRack1)
   }
+  findPlays()
 }
 
 function makePlayFromTempTiles(tempTiles) {
@@ -89,7 +120,7 @@ document.addEventListener('keydown', (e) => {
   }
   if (['Escape', 'Backspace'].includes(e.key)) {
     boardContainerRef.value.handleBoardInput(e.key)
-  } else if (e.key.startsWith('Arrow')) {
+  } else if (e.key.startsWith('Arrow') || e.key === ' ') {
     e.preventDefault()
     boardContainerRef.value.handleBoardInput(e.key)
   } else if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(e.key.toUpperCase())) {
@@ -106,6 +137,28 @@ document.addEventListener('keydown', (e) => {
   }
 })
 
+function placeCandidate(play) {
+  playMove(play)
+}
+
+function viewCandidate(play) {
+  tempTiles.clear()
+  for (let i = 0; i < play.tiles.length; i++) {
+    const tile = play.tiles[i]
+    const [x, y] = UBFHelper.offsetCoord(play.start, play.direction, i)
+    if (tile !== ' ') {
+      const coordString = `coord-${x}-${y}`
+      tempTiles.set(coordString, { letter: tile.toUpperCase(), x, y })
+    }
+  }
+  boardStateKey.value += 1
+}
+
+function clearCandidate() {
+  tempTiles.clear()
+  boardStateKey.value += 1
+}
+
 document.body.classList.add('bg-slate-100')
 </script>
 
@@ -116,24 +169,31 @@ document.body.classList.add('bg-slate-100')
     </div>
   </header>
   <main>
-    <BoardContainer
-      v-bind:key="boardStateKey"
-      :board="game.getUBF()"
-      :tempTiles="tempTiles"
-      ref="boardContainerRef"
-    />
-    <div id="tileRack" class="container mx-auto my-2 w-1/2 max-w-lg min-w-64">
-      <div class="grid grid-cols-7 grid-rows-1 gap-1 content-between">
-        <BoardTile
-          v-for="(tile, index) in rackTiles"
-          :id="`rack-tile-${index}`"
-          :key="tile.key"
-          :height="1"
-          :letter="tile.letter"
-        />
-      </div>
+    <div class="sm:mx-4 my-2 grid auto-rows-auto auto-cols-auto">
+      <BoardContainer
+        v-bind:key="boardStateKey"
+        :board="game.getUBF()"
+        :tempTiles="tempTiles"
+        ref="boardContainerRef"
+        class="row-start-1 row-span-4 md:row-start-1 md:col-start-2 md:col-span-4"
+      />
+      <TileRack
+        :rack-tiles="rackTiles"
+        class="container mx-auto my-2 w-1/2 max-w-lg min-w-64 row-start-5 row-span-1 md:row-start-5 md:col-start-2 md:col-span-4"
+      />
+      <TileBagContainer
+        v-bind:key="tileBagKey"
+        :tileBag="game.getTileBag()"
+        class="row-start-7 row-span-2 md:col-span-1 md:col-start-2"
+      />
+      <PlaysList
+        :valid-plays="validPlays"
+        class="row-start-9 row-span-2 md:col-start-1 md:row-start-1 md:row-span-5"
+        @view-candidate="viewCandidate"
+        @play-candidate="placeCandidate"
+        @clear-candidate="clearCandidate"
+      ></PlaysList>
     </div>
-    <TileBagContainer v-bind:key="tileBagKey" :tileBag="game.getTileBag()" />
   </main>
 </template>
 
