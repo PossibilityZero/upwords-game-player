@@ -14,6 +14,8 @@ const props = defineProps({
   tempTiles: Map,
 })
 
+const emit = defineEmits(['grabFocus'])
+
 let tempTiles = props.tempTiles
 
 const xCoord = (tileNum) => Math.floor(tileNum / 10)
@@ -52,6 +54,7 @@ for (let i = 0; i < 100; i++) {
 function selectTile(e) {
   deactivateAllTiles()
   activateTile(e.currentTarget.dataset.tileX, e.currentTarget.dataset.tileY)
+  emit('grabFocus')
 }
 
 function activateTile(x, y) {
@@ -130,8 +133,13 @@ function handleBoardInput(key) {
   activeTile.key++
 }
 
+function unfocus() {
+  deactivateAllTiles()
+}
+
 defineExpose({
   handleBoardInput,
+  unfocus,
 })
 </script>
 

@@ -5,9 +5,4 @@ export default {
     extend: {},
   },
   plugins: [],
-  safelist: [
-    {
-      pattern: /text-(red|green|blue|gray)-\d*/,
-    },
-  ],
 }

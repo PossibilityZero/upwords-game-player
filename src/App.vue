@@ -3,78 +3,47 @@ import BoardContainer from './components/BoardContainer.vue'
 import TileBagContainer from './components/TileBagContainer.vue'
 import TileRack from './components/TileRack.vue'
 import PlaysList from './components/PlaysList.vue'
-import { ref, reactive } from 'vue'
-import { PlayDirection, UBFHelper, UpwordsGame } from 'upwords-toolkit'
+import { ref } from 'vue'
+import { PlayDirection, UBFHelper, UpwordsGame, TileSet } from 'upwords-toolkit'
 import { UpwordsWordFinder } from 'upwords-solver'
 import { wordList } from './wordList'
 
 UpwordsWordFinder.init(wordList)
-
-const validPlays = reactive([])
-function findPlays() {
-  validPlays.length = 0
-  UpwordsWordFinder.findAllPossiblePlays(game.getUBF(), game.getTiles(0))
-    .map((play) => ({
-      play,
-      status: game.checkMove(play, true),
-      numTiles: [...play.tiles].filter((t) => t !== ' ').length,
-    }))
-    .filter((p) => p.status.isValid)
-    .map((p) => ({
-      tiles: p.play.tiles,
-      start: p.play.start,
-      direction: p.play.direction,
-      points: p.status.points,
-      numTiles: p.numTiles,
-    }))
-    .forEach((p) => validPlays.push(p))
-}
-
-const manualTiles = false
-const game = new UpwordsGame(1, manualTiles)
-const tileRack1 = game.getTiles(0)
+const game = new UpwordsGame(1, true)
 const boardStateKey = ref(0)
+const playListKey = ref(0)
 const tileBagKey = ref(0)
+const tileRackKey = ref(0)
 const tempTiles = new Map()
-
-const rackTiles = reactive([])
-function populateRackTiles(rack, tileRack) {
-  rack.length = 0
-  ;[...tileRack.listTiles()].forEach((letter) => {
-    rack.push({ key: Math.random(), letter: letter[0] })
-  })
-}
-populateRackTiles(rackTiles, tileRack1)
-
-findPlays()
-
-function manualDrawTiles(play) {
-  return game.drawSpecificTiles(game.currentPlayer, play.tiles)
-}
+let rackFocused = false
 
 function playMove(play) {
-  if (manualTiles) {
-    const canDraw = manualDrawTiles(play)
+  const playTiles = TileSet.tilesFromString(play.tiles)
+  const currentPlayerRack = game.getTiles(game.currentPlayer)
+  const currentPlayerTilesString = currentPlayerRack.listTiles()
+  if (game.getTiles(game.currentPlayer).hasTiles(playTiles)) {
+    // pass
+  } else {
+    game.returnSpecificTiles(game.currentPlayer, currentPlayerTilesString)
+    const canDraw = game.drawSpecificTiles(game.currentPlayer, play.tiles)
     if (!canDraw) {
       console.log('not enough tiles')
+      game.drawSpecificTiles(game.currentPlayer, currentPlayerTilesString)
       return
     }
   }
   if (!game.checkMove(play).isValid) {
     console.log(game.checkMove(play))
-    if (manualTiles) {
-      game.returnSpecificTiles(game.currentPlayer, play.tiles)
-    }
-    return
+    game.returnSpecificTiles(game.currentPlayer, play.tiles)
+    game.drawSpecificTiles(game.currentPlayer, currentPlayerTilesString)
+  } else {
+    game.playMove(play)
+    tempTiles.clear()
   }
-  game.playMove(play)
   boardStateKey.value += 1
   tileBagKey.value += 1
-  tempTiles.clear()
-  if (!manualTiles) {
-    populateRackTiles(rackTiles, tileRack1)
-  }
-  findPlays()
+  playListKey.value += 1
+  tileRackKey.value += 1
 }
 
 function makePlayFromTempTiles(tempTiles) {
@@ -110,18 +79,27 @@ function makePlayFromTempTiles(tempTiles) {
 }
 
 const boardContainerRef = ref(null)
+const tileRackRef = ref(null)
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.metaKey) {
     return
   }
   if (['Escape', 'Backspace'].includes(e.key)) {
-    boardContainerRef.value.handleBoardInput(e.key)
+    if (rackFocused) {
+      tileRackRef.value.handleRackInput(e.key)
+    } else {
+      boardContainerRef.value.handleBoardInput(e.key)
+    }
   } else if (e.key.startsWith('Arrow') || e.key === ' ') {
     e.preventDefault()
     boardContainerRef.value.handleBoardInput(e.key)
   } else if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(e.key.toUpperCase())) {
     // do stuff only if we have tiles
-    boardContainerRef.value.handleBoardInput(e.key)
+    if (rackFocused) {
+      tileRackRef.value.handleRackInput(e.key)
+    } else {
+      boardContainerRef.value.handleBoardInput(e.key)
+    }
   } else if (e.key === 'Enter') {
     const play = makePlayFromTempTiles(tempTiles)
     if (play) {
@@ -155,6 +133,34 @@ function clearCandidate() {
   boardStateKey.value += 1
 }
 
+function drawTile(tile, returnTile = '') {
+  console.log(tile, returnTile)
+  if (returnTile.length > 0) {
+    game.returnSpecificTiles(game.currentPlayer, returnTile)
+  }
+  const canDraw = game.drawSpecificTiles(game.currentPlayer, tile)
+  playListKey.value++
+  tileBagKey.value++
+  console.log(canDraw)
+}
+
+function returnTile(returnTile) {
+  if (returnTile.length > 0) {
+    game.returnSpecificTiles(game.currentPlayer, returnTile)
+  }
+  playListKey.value++
+  tileBagKey.value++
+}
+
+function focusTileRack() {
+  rackFocused = true
+  boardContainerRef.value.unfocus()
+}
+
+function focusBoard() {
+  rackFocused = false
+  tileRackRef.value.unfocus()
+}
 document.body.classList.add('bg-slate-100')
 </script>
 
@@ -172,10 +178,16 @@ document.body.classList.add('bg-slate-100')
         :tempTiles="tempTiles"
         ref="boardContainerRef"
         class="row-start-1 row-span-4 md:row-start-1 md:col-start-2 md:col-span-4"
+        @grab-focus="focusBoard"
       />
       <TileRack
-        :rack-tiles="rackTiles"
+        v-bind:key="tileRackKey"
+        :rack="game.getTiles(game.currentPlayer)"
+        ref="tileRackRef"
         class="container mx-auto my-2 w-1/2 max-w-lg min-w-64 row-start-5 row-span-1 md:row-start-5 md:col-start-2 md:col-span-4"
+        @grab-focus="focusTileRack"
+        @draw-tile="drawTile"
+        @return-tile="returnTile"
       />
       <TileBagContainer
         v-bind:key="tileBagKey"
@@ -183,12 +195,14 @@ document.body.classList.add('bg-slate-100')
         class="row-start-7 row-span-2 md:col-span-1 md:col-start-2"
       />
       <PlaysList
-        :valid-plays="validPlays"
+        v-bind:key="playListKey"
+        :game="game"
+        :word-finder="UpwordsWordFinder"
         class="row-start-9 row-span-2 md:col-start-1 md:row-start-1 md:row-span-5"
         @view-candidate="viewCandidate"
         @play-candidate="placeCandidate"
         @clear-candidate="clearCandidate"
-      ></PlaysList>
+      />
       <div>Player 1: {{ game.getScore(0) }}</div>
     </div>
   </main>

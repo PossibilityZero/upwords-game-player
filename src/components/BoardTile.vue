@@ -105,7 +105,7 @@ function arrowDown(active, horizontal) {
 
 <template>
   <div
-    class="text-center border"
+    class="text-center aspect-square border select-none"
     :class="`
       ${tileShadow(height, active)}
       ${borderStyle(height)}

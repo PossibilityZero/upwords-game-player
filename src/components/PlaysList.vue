@@ -1,9 +1,37 @@
 <script setup>
+import { reactive } from 'vue'
+
 const props = defineProps({
-  validPlays: Array,
+  game: Object,
+  wordFinder: Function,
 })
 
-const validPlays = props.validPlays
+const game = props.game
+const wordFinder = props.wordFinder
+
+const validPlays = reactive([])
+
+function findPlays() {
+  validPlays.length = 0
+  wordFinder
+    .findAllPossiblePlays(game.getUBF(), game.getTiles(game.currentPlayer))
+    .map((play) => ({
+      play,
+      status: game.checkMove(play, true),
+      numTiles: [...play.tiles].filter((t) => t !== ' ').length,
+    }))
+    .filter((p) => p.status.isValid)
+    .map((p) => ({
+      tiles: p.play.tiles,
+      start: p.play.start,
+      direction: p.play.direction,
+      points: p.status.points,
+      numTiles: p.numTiles,
+    }))
+    .forEach((p) => validPlays.push(p))
+  sortByPpt()
+}
+
 let reversed = false
 
 function sortByPoints() {
@@ -29,6 +57,8 @@ function sortByPpt() {
   }
   reversed = !reversed
 }
+
+findPlays()
 </script>
 
 <template>
