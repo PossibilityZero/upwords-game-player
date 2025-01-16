@@ -4,7 +4,7 @@ import TileBagContainer from './components/TileBagContainer.vue'
 import TileRack from './components/TileRack.vue'
 import PlaysList from './components/PlaysList.vue'
 import { ref, reactive } from 'vue'
-import { PlayDirection, UBFHelper, UpwordsBoard, UpwordsGame } from 'upwords-toolkit'
+import { PlayDirection, UBFHelper, UpwordsGame } from 'upwords-toolkit'
 import { UpwordsWordFinder } from 'upwords-solver'
 import { wordList } from './wordList'
 
@@ -13,12 +13,10 @@ UpwordsWordFinder.init(wordList)
 const validPlays = reactive([])
 function findPlays() {
   validPlays.length = 0
-  const ubf = game.getUBF()
-  const board = new UpwordsBoard(wordList, ubf)
-  UpwordsWordFinder.findAllPossiblePlays(board.getUBF(), game.getTiles(0))
+  UpwordsWordFinder.findAllPossiblePlays(game.getUBF(), game.getTiles(0))
     .map((play) => ({
       play,
-      status: board.checkPlay(play),
+      status: game.checkMove(play, true),
       numTiles: [...play.tiles].filter((t) => t !== ' ').length,
     }))
     .filter((p) => p.status.isValid)
@@ -29,7 +27,6 @@ function findPlays() {
       points: p.status.points,
       numTiles: p.numTiles,
     }))
-    .toSorted((a, b) => b.points - a.points)
     .forEach((p) => validPlays.push(p))
 }
 
@@ -56,7 +53,6 @@ function manualDrawTiles(play) {
 }
 
 function playMove(play) {
-  console.log(play)
   if (manualTiles) {
     const canDraw = manualDrawTiles(play)
     if (!canDraw) {
@@ -193,6 +189,7 @@ document.body.classList.add('bg-slate-100')
         @play-candidate="placeCandidate"
         @clear-candidate="clearCandidate"
       ></PlaysList>
+      <div>Player 1: {{ game.getScore(0) }}</div>
     </div>
   </main>
 </template>
