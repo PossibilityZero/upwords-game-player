@@ -15,15 +15,12 @@ const playListKey = ref(0)
 const tileBagKey = ref(0)
 const tileRackKey = ref(0)
 const tempTiles = new Map()
-let rackFocused = false
 
 function playMove(play) {
   const playTiles = TileSet.tilesFromString(play.tiles)
   const currentPlayerRack = game.getTiles(game.currentPlayer)
   const currentPlayerTilesString = currentPlayerRack.listTiles()
-  if (game.getTiles(game.currentPlayer).hasTiles(playTiles)) {
-    // pass
-  } else {
+  if (!game.getTiles(game.currentPlayer).hasTiles(playTiles)) {
     game.returnSpecificTiles(game.currentPlayer, currentPlayerTilesString)
     const canDraw = game.drawSpecificTiles(game.currentPlayer, play.tiles)
     if (!canDraw) {
@@ -85,21 +82,15 @@ document.addEventListener('keydown', (e) => {
     return
   }
   if (['Escape', 'Backspace'].includes(e.key)) {
-    if (rackFocused) {
-      tileRackRef.value.handleRackInput(e.key)
-    } else {
-      boardContainerRef.value.handleBoardInput(e.key)
-    }
+    tileRackRef.value.handleRackInput(e.key)
+    boardContainerRef.value.handleBoardInput(e.key)
   } else if (e.key.startsWith('Arrow') || e.key === ' ') {
     e.preventDefault()
+    tileRackRef.value.handleRackInput(e.key)
     boardContainerRef.value.handleBoardInput(e.key)
   } else if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(e.key.toUpperCase())) {
-    // do stuff only if we have tiles
-    if (rackFocused) {
-      tileRackRef.value.handleRackInput(e.key)
-    } else {
-      boardContainerRef.value.handleBoardInput(e.key)
-    }
+    tileRackRef.value.handleRackInput(e.key)
+    boardContainerRef.value.handleBoardInput(e.key)
   } else if (e.key === 'Enter') {
     const play = makePlayFromTempTiles(tempTiles)
     if (play) {
@@ -134,14 +125,12 @@ function clearCandidate() {
 }
 
 function drawTile(tile, returnTile = '') {
-  console.log(tile, returnTile)
   if (returnTile.length > 0) {
     game.returnSpecificTiles(game.currentPlayer, returnTile)
   }
-  const canDraw = game.drawSpecificTiles(game.currentPlayer, tile)
+  game.drawSpecificTiles(game.currentPlayer, tile)
   playListKey.value++
   tileBagKey.value++
-  console.log(canDraw)
 }
 
 function returnTile(returnTile) {
@@ -153,12 +142,10 @@ function returnTile(returnTile) {
 }
 
 function focusTileRack() {
-  rackFocused = true
   boardContainerRef.value.unfocus()
 }
 
 function focusBoard() {
-  rackFocused = false
   tileRackRef.value.unfocus()
 }
 document.body.classList.add('bg-slate-100')
@@ -183,6 +170,7 @@ document.body.classList.add('bg-slate-100')
       <TileRack
         v-bind:key="tileRackKey"
         :rack="game.getTiles(game.currentPlayer)"
+        :tile-bag="game.getTileBag()"
         ref="tileRackRef"
         class="container mx-auto my-2 w-1/2 max-w-lg min-w-64 row-start-5 row-span-1 md:row-start-5 md:col-start-2 md:col-span-4"
         @grab-focus="focusTileRack"
@@ -191,8 +179,8 @@ document.body.classList.add('bg-slate-100')
       />
       <TileBagContainer
         v-bind:key="tileBagKey"
-        :tileBag="game.getTileBag()"
-        class="row-start-7 row-span-2 md:col-span-1 md:col-start-2"
+        :tile-bag="game.getTileBag()"
+        class="container w-1/2 row-start-7 row-span-2 md:col-span-1 md:col-start-2"
       />
       <PlaysList
         v-bind:key="playListKey"

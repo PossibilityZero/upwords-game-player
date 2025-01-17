@@ -1,10 +1,16 @@
 <script setup>
+import { TileSet } from 'upwords-toolkit'
 import RackTile from './RackTile.vue'
 import { reactive } from 'vue'
 
 const props = defineProps({
   rack: Object,
+  tileBag: Object,
 })
+
+function canDraw(letter, returnLetter) {
+  return letter !== returnLetter && props.tileBag.hasTiles(TileSet.tilesFromString(letter))
+}
 
 const emit = defineEmits(['grabFocus', 'drawTile', 'returnTile'])
 
@@ -36,27 +42,47 @@ function activateTile(id) {
   rackTiles[id].active = true
 }
 
+function moveActiveTileRight(activeTile) {
+  activeTile.active = false
+  activateTile(Math.min(activeTile.id + 1, 6))
+}
+
+function moveActiveTileLeft(activeTile) {
+  activeTile.active = false
+  activateTile(Math.max(activeTile.id - 1, 0))
+}
+
 function handleRackInput(key) {
   const activeTile = rackTiles.find((tile) => tile.active)
   if (!activeTile) {
     return
   }
   const letter = key.toUpperCase()
-  if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(letter)) {
-    emit('drawTile', letter, activeTile.letter)
+  const returnLetter = activeTile.letter
+  if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(letter) && canDraw(letter, returnLetter)) {
     activeTile.letter = letter
-    activeTile.active = false
-    activateTile(Math.min(activeTile.id + 1, 6))
+    moveActiveTileRight(activeTile)
+    emit('drawTile', letter, returnLetter)
   } else if (key === 'Backspace') {
-    if (activeTile.letter.length > 0) {
-      emit('returnTile', activeTile.letter)
+    if (returnLetter.length > 0) {
       activeTile.letter = ''
+      emit('returnTile', returnLetter)
     } else {
-      activeTile.active = false
-      activateTile(Math.max(activeTile.id - 1, 0))
+      moveActiveTileLeft(activeTile)
       const newActiveTile = rackTiles.find((tile) => tile.active)
       emit('returnTile', newActiveTile.letter)
       newActiveTile.letter = ''
+    }
+  } else if (key.startsWith('Arrow')) {
+    switch (key) {
+      case 'ArrowUp':
+      case 'ArrowLeft':
+        moveActiveTileLeft(activeTile)
+        break
+      case 'ArrowDown':
+      case 'ArrowRight':
+        moveActiveTileRight(activeTile)
+        break
     }
   }
 }
