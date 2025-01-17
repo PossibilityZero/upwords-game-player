@@ -5,18 +5,20 @@ import TileRack from './components/TileRack.vue'
 import PlaysList from './components/PlaysList.vue'
 import { ref } from 'vue'
 import { PlayDirection, UBFHelper, UpwordsGame, TileSet } from 'upwords-toolkit'
-import { UpwordsWordFinder } from 'upwords-solver'
-import { wordList } from './wordList'
 
-UpwordsWordFinder.init(wordList)
-const game = new UpwordsGame(1, true)
+const game = new UpwordsGame(1, false)
 const boardStateKey = ref(0)
-const playListKey = ref(0)
 const tileBagKey = ref(0)
 const tileRackKey = ref(0)
 const tempTiles = new Map()
+const boardContainerRef = ref(null)
+const tileRackRef = ref(null)
+const playListRef = ref(null)
 
 function playMove(play) {
+  if (!game.checkMove(play, true).isValid) {
+    return
+  }
   const playTiles = TileSet.tilesFromString(play.tiles)
   const currentPlayerRack = game.getTiles(game.currentPlayer)
   const currentPlayerTilesString = currentPlayerRack.listTiles()
@@ -39,7 +41,7 @@ function playMove(play) {
   }
   boardStateKey.value += 1
   tileBagKey.value += 1
-  playListKey.value += 1
+  playListRef.value.update()
   tileRackKey.value += 1
 }
 
@@ -75,8 +77,6 @@ function makePlayFromTempTiles(tempTiles) {
   return play
 }
 
-const boardContainerRef = ref(null)
-const tileRackRef = ref(null)
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.metaKey) {
     return
@@ -129,7 +129,7 @@ function drawTile(tile, returnTile = '') {
     game.returnSpecificTiles(game.currentPlayer, returnTile)
   }
   game.drawSpecificTiles(game.currentPlayer, tile)
-  playListKey.value++
+  playListRef.value.update()
   tileBagKey.value++
 }
 
@@ -137,7 +137,7 @@ function returnTile(returnTile) {
   if (returnTile.length > 0) {
     game.returnSpecificTiles(game.currentPlayer, returnTile)
   }
-  playListKey.value++
+  playListRef.value.update()
   tileBagKey.value++
 }
 
@@ -183,9 +183,8 @@ document.body.classList.add('bg-slate-100')
         class="container w-1/2 row-start-7 row-span-2 md:col-span-1 md:col-start-2"
       />
       <PlaysList
-        v-bind:key="playListKey"
         :game="game"
-        :word-finder="UpwordsWordFinder"
+        ref="playListRef"
         class="row-start-9 row-span-2 md:col-start-1 md:row-start-1 md:row-span-5"
         @view-candidate="viewCandidate"
         @play-candidate="placeCandidate"
