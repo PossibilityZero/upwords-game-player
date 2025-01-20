@@ -6,8 +6,11 @@ import { reactive } from 'vue'
 const props = defineProps({
   rack: Object,
   tileBag: Object,
+  playerId: Number,
+  active: Boolean,
 })
 
+const playerId = props.playerId
 function canDraw(letter, returnLetter) {
   return letter !== returnLetter && props.tileBag.hasTiles(TileSet.tilesFromString(letter))
 }
@@ -28,10 +31,9 @@ const rackTiles = reactive([])
 })(rackTiles, props.rack)
 
 function select(tile) {
+  emit('grabFocus', playerId)
   deactivateAllTiles()
   tile.active = true
-  console.log(tile)
-  emit('grabFocus')
 }
 
 function deactivateAllTiles() {
@@ -62,15 +64,15 @@ function handleRackInput(key) {
   if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(letter) && canDraw(letter, returnLetter)) {
     activeTile.letter = letter
     moveActiveTileRight(activeTile)
-    emit('drawTile', letter, returnLetter)
+    emit('drawTile', playerId, letter, returnLetter)
   } else if (key === 'Backspace') {
     if (returnLetter.length > 0) {
       activeTile.letter = ''
-      emit('returnTile', returnLetter)
+      emit('returnTile', playerId, returnLetter)
     } else {
       moveActiveTileLeft(activeTile)
       const newActiveTile = rackTiles.find((tile) => tile.active)
-      emit('returnTile', newActiveTile.letter)
+      emit('returnTile', playerId, newActiveTile.letter)
       newActiveTile.letter = ''
     }
   } else if (key.startsWith('Arrow')) {
@@ -87,7 +89,10 @@ function handleRackInput(key) {
   }
 }
 
-function unfocus() {
+function unfocus(source) {
+  if (playerId === source) {
+    return
+  }
   deactivateAllTiles()
 }
 
@@ -98,7 +103,10 @@ defineExpose({
 </script>
 
 <template>
-  <div class="grid grid-cols-7 grid-rows-1 gap-1 content-between h-20 bg-zinc-200">
+  <div
+    class="grid place-content-center rounded-lg px-1 grid-cols-7 gap-1 h-20 bg-zinc-200"
+    :class="active ? 'bg-blue-200' : 'bg-zinc-200'"
+  >
     <RackTile
       v-for="(tile, index) in rackTiles"
       :id="`rack-tile-${index}`"

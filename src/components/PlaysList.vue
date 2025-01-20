@@ -106,7 +106,7 @@ defineExpose({
 
 <template>
   <div
-    class="overflow-hidden border rounded-lg bg-slate-200 lg:w-[40rem] max-h-[50vh] select-none"
+    class="overflow-hidden border rounded-lg bg-slate-200 w-[32rem] xl:w-[40rem] max-h-[50vh] select-none"
     @mouseleave="$emit('clearCandidate')"
   >
     <div class="grid grid-cols-5 text-lg bg-slate-300">

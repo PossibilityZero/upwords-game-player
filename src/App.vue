@@ -6,14 +6,21 @@ import PlaysList from './components/PlaysList.vue'
 import { ref } from 'vue'
 import { PlayDirection, UBFHelper, UpwordsGame, TileSet } from 'upwords-toolkit'
 
-const game = new UpwordsGame(1, false)
+const game = new UpwordsGame(2, true)
 const boardStateKey = ref(0)
 const tileBagKey = ref(0)
-const tileRackKey = ref(0)
 const tempTiles = new Map()
 const boardContainerRef = ref(null)
 const tileRackRef = ref(null)
 const playListRef = ref(null)
+const players = ref([])
+
+for (let i = 0; i < game.playerCount; i++) {
+  players.value.push({
+    id: i,
+    key: Math.random(),
+  })
+}
 
 function playMove(play) {
   if (!game.checkMove(play, true).isValid) {
@@ -21,20 +28,20 @@ function playMove(play) {
   }
   const playTiles = TileSet.tilesFromString(play.tiles)
   const currentPlayerRack = game.getTiles(game.currentPlayer)
-  const currentPlayerTilesString = currentPlayerRack.listTiles()
-  if (!game.getTiles(game.currentPlayer).hasTiles(playTiles)) {
-    game.returnSpecificTiles(game.currentPlayer, currentPlayerTilesString)
+  const currentTilesString = currentPlayerRack.listTiles()
+  if (!currentPlayerRack.hasTiles(playTiles)) {
+    game.returnSpecificTiles(game.currentPlayer, currentTilesString)
     const canDraw = game.drawSpecificTiles(game.currentPlayer, play.tiles)
     if (!canDraw) {
       console.log('not enough tiles')
-      game.drawSpecificTiles(game.currentPlayer, currentPlayerTilesString)
+      game.drawSpecificTiles(game.currentPlayer, currentTilesString)
       return
     }
   }
   if (!game.checkMove(play).isValid) {
     console.log(game.checkMove(play))
     game.returnSpecificTiles(game.currentPlayer, play.tiles)
-    game.drawSpecificTiles(game.currentPlayer, currentPlayerTilesString)
+    game.drawSpecificTiles(game.currentPlayer, currentTilesString)
   } else {
     game.playMove(play)
     tempTiles.clear()
@@ -42,7 +49,7 @@ function playMove(play) {
   boardStateKey.value += 1
   tileBagKey.value += 1
   playListRef.value.update()
-  tileRackKey.value += 1
+  players.value.forEach((player) => player.key++)
 }
 
 function makePlayFromTempTiles(tempTiles) {
@@ -82,14 +89,14 @@ document.addEventListener('keydown', (e) => {
     return
   }
   if (['Escape', 'Backspace'].includes(e.key)) {
-    tileRackRef.value.handleRackInput(e.key)
+    tileRackRef.value.forEach((rack) => rack.handleRackInput(e.key))
     boardContainerRef.value.handleBoardInput(e.key)
   } else if (e.key.startsWith('Arrow') || e.key === ' ') {
     e.preventDefault()
-    tileRackRef.value.handleRackInput(e.key)
+    tileRackRef.value.forEach((rack) => rack.handleRackInput(e.key))
     boardContainerRef.value.handleBoardInput(e.key)
   } else if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(e.key.toUpperCase())) {
-    tileRackRef.value.handleRackInput(e.key)
+    tileRackRef.value.forEach((rack) => rack.handleRackInput(e.key))
     boardContainerRef.value.handleBoardInput(e.key)
   } else if (e.key === 'Enter') {
     const play = makePlayFromTempTiles(tempTiles)
@@ -124,29 +131,30 @@ function clearCandidate() {
   boardStateKey.value += 1
 }
 
-function drawTile(tile, returnTile = '') {
+function drawTile(player, tile, returnTile = '') {
   if (returnTile.length > 0) {
-    game.returnSpecificTiles(game.currentPlayer, returnTile)
+    game.returnSpecificTiles(player, returnTile)
   }
-  game.drawSpecificTiles(game.currentPlayer, tile)
+  game.drawSpecificTiles(player, tile)
   playListRef.value.update()
   tileBagKey.value++
 }
 
-function returnTile(returnTile) {
+function returnTile(player, returnTile) {
   if (returnTile.length > 0) {
-    game.returnSpecificTiles(game.currentPlayer, returnTile)
+    game.returnSpecificTiles(player, returnTile)
   }
   playListRef.value.update()
   tileBagKey.value++
 }
 
-function focusTileRack() {
+function focusTileRack(id) {
+  tileRackRef.value.forEach((rack) => rack.unfocus(id))
   boardContainerRef.value.unfocus()
 }
 
 function focusBoard() {
-  tileRackRef.value.unfocus()
+  tileRackRef.value.forEach((rack) => rack.unfocus())
 }
 document.body.classList.add('bg-slate-100')
 </script>
@@ -158,29 +166,47 @@ document.body.classList.add('bg-slate-100')
     </div>
   </header>
   <main>
-    <div class="sm:mx-4 my-2 grid auto-rows-auto auto-cols-auto">
+    <div
+      class="xl:px-4 sm:mx-4 my-2 grid auto-rows-auto auto-cols-auto place-content-center lg:gap-5"
+    >
       <BoardContainer
         v-bind:key="boardStateKey"
         :board="game.getUBF()"
         :tempTiles="tempTiles"
         ref="boardContainerRef"
-        class="row-start-1 row-span-4 md:row-start-1 md:col-start-2 md:col-span-4"
+        class="row-start-1 row-span-4 2xl:w-[48rem] mx-auto md:row-start-1 md:col-start-2"
         @grab-focus="focusBoard"
       />
-      <TileRack
-        v-bind:key="tileRackKey"
-        :rack="game.getTiles(game.currentPlayer)"
-        :tile-bag="game.getTileBag()"
-        ref="tileRackRef"
-        class="container mx-auto my-2 w-1/2 max-w-lg min-w-64 row-start-5 row-span-1 md:row-start-5 md:col-start-2 md:col-span-4"
-        @grab-focus="focusTileRack"
-        @draw-tile="drawTile"
-        @return-tile="returnTile"
-      />
+      <div
+        class="container mx-auto my-2 w-1/2 max-w-lg min-w-64 row-span-1 lg:w-[20rem] 2xl:w-[32rem] md:col-start-2"
+        :class="
+          index === 0
+            ? 'row-start-5'
+            : index === 1
+              ? 'row-start-6'
+              : index === 2
+                ? 'row-start-7'
+                : 'row-start-8'
+        "
+        v-for="(player, index) in players"
+        :key="player.key"
+      >
+        <TileRack
+          :rack="game.getTiles(player.id)"
+          :tile-bag="game.getTileBag()"
+          :player-id="player.id"
+          :active="game.currentPlayer === player.id"
+          ref="tileRackRef"
+          @grab-focus="focusTileRack"
+          @draw-tile="drawTile"
+          @return-tile="returnTile"
+        />
+        <div>Player {{ player.id + 1 }}: {{ game.getScore(player.id) }}</div>
+      </div>
       <TileBagContainer
         v-bind:key="tileBagKey"
         :tile-bag="game.getTileBag()"
-        class="container w-1/2 row-start-7 row-span-2 md:col-span-1 md:col-start-2"
+        class="container row-start-7 row-span-2 max-w-96 md:row-start-1 md:col-span-1 md:col-start-3"
       />
       <PlaysList
         :game="game"
@@ -190,7 +216,6 @@ document.body.classList.add('bg-slate-100')
         @play-candidate="placeCandidate"
         @clear-candidate="clearCandidate"
       />
-      <div>Player 1: {{ game.getScore(0) }}</div>
     </div>
   </main>
 </template>
