@@ -164,13 +164,11 @@ function saveGame() {
   const savedGames = JSON.parse(localStorage.getItem('saved-games')) || {}
   savedGames[gameId] = game.serialize()
   localStorage.setItem('saved-games', JSON.stringify(savedGames))
-  console.log(game.serialize())
 }
 document.body.classList.add('bg-slate-100')
 
 function loadGame(id) {
   const savedGames = JSON.parse(localStorage.getItem('saved-games')) || {}
-  console.log(savedGames[id])
   game.loadGameFromSerialized(savedGames[id])
   boardStateKey.value += 1
   tileBagKey.value += 1

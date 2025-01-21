@@ -67,7 +67,6 @@ function changeSortFunc(compFunc, reversed = false) {
     sortFuncs.unshift({ fn: compFunc, reversed })
     sortFuncs.length = Math.min(sortFuncs.length, 2)
   }
-  console.log('after change', [...sortFuncs])
 }
 
 function sortByPoints() {
