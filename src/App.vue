@@ -5,8 +5,9 @@ import TileRack from './components/TileRack.vue'
 import PlaysList from './components/PlaysList.vue'
 import { ref } from 'vue'
 import { PlayDirection, UBFHelper, UpwordsGame, TileSet } from 'upwords-toolkit'
+import { wordList } from './wordList'
 
-const game = new UpwordsGame(2, true)
+const game = new UpwordsGame(wordList, 2, true)
 const boardStateKey = ref(0)
 const tileBagKey = ref(0)
 const tempTiles = new Map()
@@ -14,6 +15,7 @@ const boardContainerRef = ref(null)
 const tileRackRef = ref(null)
 const playListRef = ref(null)
 const players = ref([])
+const savedGames = Object.keys(JSON.parse(localStorage.getItem('saved-games') || {}))
 
 for (let i = 0; i < game.playerCount; i++) {
   players.value.push({
@@ -156,7 +158,31 @@ function focusTileRack(id) {
 function focusBoard() {
   tileRackRef.value.forEach((rack) => rack.unfocus())
 }
+
+function saveGame() {
+  const gameId = `saved-game_${new Date().toISOString()}`
+  const savedGames = JSON.parse(localStorage.getItem('saved-games')) || {}
+  savedGames[gameId] = game.serialize()
+  localStorage.setItem('saved-games', JSON.stringify(savedGames))
+  console.log(game.serialize())
+}
 document.body.classList.add('bg-slate-100')
+
+function loadGame(id) {
+  const savedGames = JSON.parse(localStorage.getItem('saved-games')) || {}
+  console.log(savedGames[id])
+  game.loadGameFromSerialized(savedGames[id])
+  boardStateKey.value += 1
+  tileBagKey.value += 1
+  playListRef.value.update()
+  players.value.forEach((player) => player.key++)
+}
+
+function deleteSave(id) {
+  const savedGames = JSON.parse(localStorage.getItem('saved-games')) || {}
+  delete savedGames[id]
+  localStorage.setItem('saved-games', JSON.stringify(savedGames))
+}
 </script>
 
 <template>
@@ -169,6 +195,14 @@ document.body.classList.add('bg-slate-100')
     <div
       class="xl:px-4 sm:mx-4 my-2 grid auto-rows-auto auto-cols-auto place-content-center lg:gap-5"
     >
+      <button class="p-2 bg-slate-400" @click="saveGame">Save game</button>
+      <div>
+        <li class="my-2" v-for="(saved, index) in savedGames" :key="index">
+          {{ saved }}
+          <button class="bg-slate-200" @click="loadGame(saved)">load save</button>
+          <button class="bg-slate-200" @click="deleteSave(saved)">delete save</button>
+        </li>
+      </div>
       <BoardContainer
         v-bind:key="boardStateKey"
         :board="game.getUBF()"
