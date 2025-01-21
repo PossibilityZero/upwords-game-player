@@ -10,14 +10,14 @@ const props = defineProps({
   active: Boolean,
 })
 
-const playerId = props.playerId
-function canDraw(letter, returnLetter) {
-  return letter !== returnLetter && props.tileBag.hasTiles(TileSet.tilesFromString(letter))
-}
-
 const emit = defineEmits(['grabFocus', 'drawTile', 'returnTile'])
 
 const rackTiles = reactive([])
+const playerId = props.playerId
+
+function canDraw(letter, returnLetter) {
+  return letter === returnLetter || props.tileBag.hasTiles(TileSet.tilesFromString(letter))
+}
 ;(function populateRackTiles(rack, tileRack) {
   rack.length = 0
   const currentTiles = tileRack.listTiles()
