@@ -2,7 +2,7 @@
 import { reactive } from 'vue'
 import { UpwordsWordFinder } from 'upwords-solver'
 import { wordList } from '../wordList'
-import SvgSortIcon from './SvgSortIcon.vue'
+import SvgSortIcon from './svgIcons/SvgSortIcon.vue'
 const props = defineProps({
   game: Object,
 })

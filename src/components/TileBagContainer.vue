@@ -7,7 +7,7 @@ const tileBag = props.tileBag
 </script>
 
 <template>
-  <div id="tile-bag-container" class="container mx-auto my-8">
+  <div id="tile-bag-container" class="container w-96 h-[24rem] mx-auto">
     <h2 class="text-3xl">Tile Bag:</h2>
     <h3 class="text-2xl">Remaining tiles: {{ tileBag.tileCount }}</h3>
     <span
