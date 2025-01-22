@@ -7,15 +7,22 @@ const tileBag = props.tileBag
 </script>
 
 <template>
-  <div id="tile-bag-container" class="container w-96 h-[24rem] mx-auto">
-    <h2 class="text-3xl">Tile Bag:</h2>
-    <h3 class="text-2xl">Remaining tiles: {{ tileBag.tileCount }}</h3>
+  <div id="tile-bag-container" class="container p-2 rounded-xl bg-zinc-200 w-96 h-[20rem]">
+    <div class="flex">
+      <h2 class="text-3xl mb-2">Tile Bag</h2>
+      <span class="text-right grow text-xl">Remaining tiles: {{ tileBag.tileCount }}</span>
+    </div>
     <span
-      v-for="letter in Object.keys(tileBag.getTiles())"
+      v-for="letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'"
       v-bind:key="letter"
-      class="pr-4 text-2xl font-bold"
+      class="inline-block font-mono pr-4 text-3xl"
     >
-      {{ letter }}: {{ tileBag.getLetter(letter) }}
+      <span class="font-bold">{{ letter }} </span>
+      <span
+        class="pl-2 pr-9 text-xl"
+        :class="tileBag.getLetter(letter) > 0 ? 'text-gray-600' : 'text-red-600'"
+        >{{ tileBag.getLetter(letter) }}</span
+      >
     </span>
   </div>
 </template>

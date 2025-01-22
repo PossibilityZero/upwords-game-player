@@ -82,7 +82,7 @@ defineExpose({ reset })
 
 <template>
   <div :key="saveManagerKey">
-    <form class="bg-zinc-200 p-2 mb-2" @submit.prevent="newGame">
+    <form class="bg-zinc-200 rounded-lg p-2 mb-2" @submit.prevent="newGame">
       <h3 class="font-bold text-lg">New Game Setup</h3>
       <div class="py-1">
         <label>Automatic tile draw </label>
