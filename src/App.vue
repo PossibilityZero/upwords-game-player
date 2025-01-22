@@ -29,9 +29,6 @@ function loadGame(serialized) {
 }
 
 function playMove(play) {
-  if (!game.checkMove(play, true).isValid) {
-    return
-  }
   const playTiles = TileSet.tilesFromString(play.tiles)
   const currentPlayerRack = game.getTiles(game.currentPlayer)
   const currentTilesString = currentPlayerRack.listTiles()
@@ -52,6 +49,11 @@ function playMove(play) {
     game.playMove(play)
     tempTiles.clear()
   }
+  refreshGameComponents()
+}
+
+function skipTurn() {
+  game.skipTurn()
   refreshGameComponents()
 }
 
@@ -196,6 +198,11 @@ document.body.classList.add('bg-slate-100')
         class="row-start-1 row-span-4 2xl:w-[48rem] mx-auto md:row-start-1 md:col-start-2"
         @grab-focus="focusBoard"
       />
+      <div class="xl:col-start-2 xl:row-start-3">
+        <button class="bg-slate-300 rounded-lg p-2 hover:bg-slate-400" @click="skipTurn">
+          Skip turn
+        </button>
+      </div>
       <PlayerDisplay
         class="container mx-auto max-w-lg min-w-64 row-span-1 lg:w-[20rem] 2xl:w-[32rem] md:col-start-2"
         :game="game"
