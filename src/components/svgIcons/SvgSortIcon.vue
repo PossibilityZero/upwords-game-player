@@ -11,7 +11,7 @@ function stroke(descending) {
 }
 function display(show, primary) {
   if (!show) {
-    return 'hidden'
+    return '!hidden'
   } else {
     return primary ? 'stroke-gray-900' : 'stroke-gray-500'
   }

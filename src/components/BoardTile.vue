@@ -37,7 +37,7 @@ function borderStyle(height) {
 
 function borderColorOuter(active, temp, height) {
   if (height === 0 && !active && !temp) {
-    return 'border-gray-150'
+    return 'border-gray-200'
   } else {
     return borderColor(active, temp, height)
   }

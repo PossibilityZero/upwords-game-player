@@ -16,7 +16,7 @@ const tileBag = props.tileBag
       v-for="letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'"
       v-bind:key="letter"
       class="inline-block font-mono pr-4 text-3xl"
-      :class="tileBag.getLetter(letter) > 0 ? '' : 'opacity-50'"
+      :class="tileBag.getLetter(letter) > 0 ? '' : 'opacity-30'"
     >
       <span class="font-bold">{{ letter }} </span>
       <span

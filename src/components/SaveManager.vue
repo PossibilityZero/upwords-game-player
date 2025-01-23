@@ -92,7 +92,7 @@ defineExpose({ reset })
         <label>Players (1 - 4) </label>
         <input
           v-model="newGamePlayerCount"
-          class="px-1"
+          class="rounded bg-gray-50 px-1"
           type="number"
           name="numPlayers"
           value="2"
@@ -100,7 +100,9 @@ defineExpose({ reset })
           max="4"
         />
       </div>
-      <button class="mr-2 p-2 bg-slate-300 rounded-md hover:bg-slate-400">New game</button>
+      <button class="mr-2 p-2 bg-slate-300 rounded-md hover:bg-slate-400 hover:cursor-pointer">
+        New game
+      </button>
     </form>
 
     <form @submit.prevent="saveGame">
@@ -108,17 +110,25 @@ defineExpose({ reset })
         v-model="saveGameName"
         name="saveName"
         type="text"
-        class="px-1 mb-1 w-80 rounded border border-gray-500"
+        class="px-1 mb-1 w-80 rounded bg-white"
         autocomplete="off"
       />
-      <button class="mx-2 p-2 bg-slate-300 rounded-md hover:bg-slate-400">Save game</button>
+      <button class="mx-2 p-2 bg-slate-300 rounded-md hover:bg-slate-400 hover:cursor-pointer">
+        Save game
+      </button>
     </form>
     <div>
       <div class="my-2" v-for="(saved, index) in savedGames" :key="index">
-        <button class="px-1 mr-2 bg-slate-200 rounded" @click="loadGame(saved)">
+        <button
+          class="px-1 mr-2 bg-slate-200 rounded hover:cursor-pointer"
+          @click="loadGame(saved)"
+        >
           <SvgLoadIcon />
         </button>
-        <button class="px-1 mr-2 bg-slate-200 rounded" @click="deleteSave(saved)">
+        <button
+          class="px-1 mr-2 bg-slate-200 rounded hover:cursor-pointer"
+          @click="deleteSave(saved)"
+        >
           <SvgDeleteIcon />
         </button>
         <span class="font-bold mr-2 text-lg">{{ saved }}</span>

@@ -105,12 +105,12 @@ defineExpose({
 
 <template>
   <div
-    class="overflow-hidden border rounded-lg bg-slate-200 w-[32rem] xl:w-[40rem] max-h-[50vh] select-none"
+    class="overflow-hidden rounded-lg bg-slate-200 w-[32rem] xl:w-[40rem] max-h-[50vh] select-none"
     @mouseleave="$emit('clearCandidate')"
   >
-    <div class="grid grid-cols-5 text-lg bg-slate-300">
-      <button>Word</button>
-      <button>Direction</button>
+    <div class="px-1 grid grid-cols-5 text-lg bg-slate-300">
+      <div><span>Word</span></div>
+      <div><span>Direction</span></div>
       <div @click="sortByPoints" class="hover:bg-slate-400">
         <span
           >Points
@@ -133,7 +133,7 @@ defineExpose({
         </span>
       </div>
     </div>
-    <div class="w-100 text-lg overflow-y-scroll no-scrollbar max-h-[50vh]">
+    <div class="px-1 w-100% text-lg overflow-y-scroll no-scrollbar max-h-[50vh]">
       <div
         class="grid grid-cols-5 font-mono hover:bg-slate-300"
         @mouseover="$emit('viewCandidate', play)"
