@@ -11,6 +11,7 @@ import { wordList } from './wordList'
 const game = new UpwordsGame(wordList, 2, true)
 const boardStateKey = ref(0)
 const tileBagKey = ref(0)
+let tempDisplayFromPlayList = false
 const tempTiles = new Map()
 const saveManagerRef = ref(null)
 const boardContainerRef = ref(null)
@@ -54,6 +55,11 @@ function playMove(play) {
 
 function skipTurn() {
   game.skipTurn()
+  refreshGameComponents()
+}
+
+function undoTurn() {
+  game.undoTurn()
   refreshGameComponents()
 }
 
@@ -119,6 +125,7 @@ function placeCandidate(play) {
 }
 
 function viewCandidate(play) {
+  tempDisplayFromPlayList = true
   tempTiles.clear()
   for (let i = 0; i < play.tiles.length; i++) {
     const tile = play.tiles[i]
@@ -131,9 +138,12 @@ function viewCandidate(play) {
   boardStateKey.value += 1
 }
 
-function clearCandidate() {
-  tempTiles.clear()
-  boardStateKey.value += 1
+function clearCandidateFromPlayList() {
+  if (tempDisplayFromPlayList) {
+    tempTiles.clear()
+    boardStateKey.value += 1
+    tempDisplayFromPlayList = false
+  }
 }
 
 function drawTile(player, tile, returnTile = '') {
@@ -195,12 +205,15 @@ document.body.classList.add('bg-slate-100')
         :board="game.getUBF()"
         :tempTiles="tempTiles"
         ref="boardContainerRef"
-        class="row-start-1 row-span-4 2xl:w-[48rem] mx-auto md:row-start-1 md:col-start-2"
+        class="row-start-1 row-span-2 2xl:w-[48rem] mx-auto md:row-start-1 md:col-start-2"
         @grab-focus="focusBoard"
       />
       <div class="xl:col-start-2 xl:row-start-3">
         <button class="bg-slate-300 rounded-lg p-2 hover:bg-slate-400" @click="skipTurn">
           Skip turn
+        </button>
+        <button class="bg-slate-300 rounded-lg p-2 mx-2 hover:bg-slate-400" @click="undoTurn">
+          Undo turn
         </button>
       </div>
       <PlayerDisplay
@@ -222,11 +235,11 @@ document.body.classList.add('bg-slate-100')
         :game="game"
         @view-candidate="viewCandidate"
         @play-candidate="placeCandidate"
-        @clear-candidate="clearCandidate"
+        @clear-candidate="clearCandidateFromPlayList"
       />
       <SaveManager
         ref="saveManagerRef"
-        class="xl:col-start-3 xl:row-start-2"
+        class="xl:col-start-3 xl:row-start-2 row-span-3"
         :game="game"
         @new-game="startNewGame"
         @load-game="loadGame"
