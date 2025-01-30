@@ -8,7 +8,7 @@ const props = defineProps({
   game: UpwordsGame,
 })
 
-const emit = defineEmits(['newGame', 'loadGame'])
+const emit = defineEmits(['newGame', 'saveGame', 'loadGame'])
 const saveManagerKey = ref(0)
 const saveGameName = ref('')
 const newGamePlayerCount = ref(2)
@@ -45,6 +45,7 @@ function newGame() {
 }
 
 function saveGame() {
+  emit('saveGame')
   const gameId = saveGameName.value || generateAutomaticSaveName(true)
   const savedGames = JSON.parse(localStorage.getItem('saved-games')) || {}
   savedGames[gameId] = props.game.serialize()

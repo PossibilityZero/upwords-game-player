@@ -10,12 +10,16 @@ import { wordList } from './wordList'
 
 const game = new UpwordsGame(wordList, 2, true)
 const tileBagKey = ref(0)
+const reservedTileBagKey = ref(0)
 let tempDisplayFromPlayList = false
 const tempTiles = new Map()
 const saveManagerRef = ref(null)
 const boardContainerRef = ref(null)
 const playerDisplayRef = ref(null)
 const playListRef = ref(null)
+const reserveTileString = ref('')
+const returnTileString = ref('')
+const reservedTileSet = new TileSet()
 
 function startNewGame(playerCount, manualTiles) {
   const newGameState = new UpwordsGame(wordList, playerCount, manualTiles).serialize()
@@ -25,6 +29,7 @@ function startNewGame(playerCount, manualTiles) {
 
 function loadGame(serialized) {
   game.loadGameFromSerialized(serialized)
+  reservedTileSet.deleteAllTiles()
   refreshGameComponents()
 }
 
@@ -161,6 +166,36 @@ function returnTile(player, returnTile) {
   tileBagKey.value++
 }
 
+function reserveTiles() {
+  const transferedTiles = TileSet.tilesFromString(reserveTileString.value)
+  if (game.getTileBag().hasTiles(transferedTiles)) {
+    game.getTileBag().removeTiles(transferedTiles)
+    reservedTileSet.addTiles(transferedTiles)
+    reserveTileString.value = ''
+    tileBagKey.value++
+    reservedTileBagKey.value++
+  }
+}
+
+function returnSpecificReserved() {
+  const transferedTiles = TileSet.tilesFromString(returnTileString.value)
+  if (reservedTileSet.hasTiles(transferedTiles)) {
+    reservedTileSet.removeTiles(transferedTiles)
+    game.getTileBag().addTiles(transferedTiles)
+    returnTileString.value = ''
+    tileBagKey.value++
+    reservedTileBagKey.value++
+  }
+}
+
+function returnReserved() {
+  const returning = reservedTileSet.getTiles()
+  game.getTileBag().addTiles(returning)
+  reservedTileSet.deleteAllTiles()
+  tileBagKey.value++
+  reservedTileBagKey.value++
+}
+
 function focusTileRack(id) {
   playerDisplayRef.value.unfocus(id)
   boardContainerRef.value.unfocus()
@@ -174,11 +209,13 @@ function refreshGameComponents() {
   tempTiles.clear()
   boardContainerRef.value.update()
   tileBagKey.value += 1
+  reservedTileBagKey.value += 1
   playListRef.value.update()
   playerDisplayRef.value.update()
 }
 
 function resetAllComponents() {
+  reservedTileSet.deleteAllTiles()
   playerDisplayRef.value.reset()
   saveManagerRef.value.reset()
   refreshGameComponents()
@@ -239,7 +276,36 @@ document.body.classList.add('bg-slate-100')
         :game="game"
         @new-game="startNewGame"
         @load-game="loadGame"
+        @save-game="returnReserved"
       />
+      <div class="xl:col-start-1 xl:row-start-4">
+        <TileBagContainer
+          v-bind:key="reservedTileBagKey"
+          :tile-bag="reservedTileSet"
+          :override-title="'Reserved tiles'"
+          class="container"
+        />
+        <form @submit.prevent="reserveTiles">
+          <label>Reserve tiles:</label>
+          <input v-model="reserveTileString" type="text" class="px-1 mx-1 w-80 rounded bg-white" />
+          <button class="bg-slate-300 rounded-lg p-2 mx-2 hover:bg-slate-400 hover:cursor-pointer">
+            Reserve
+          </button>
+        </form>
+        <form @submit.prevent="returnSpecificReserved">
+          <label>Return reserved tiles:</label>
+          <input v-model="returnTileString" type="text" class="px-1 mx-1 w-80 rounded bg-white" />
+          <button class="bg-slate-300 rounded-lg p-2 mx-2 hover:bg-slate-400 hover:cursor-pointer">
+            Return
+          </button>
+        </form>
+        <button
+          @click="returnReserved"
+          class="bg-slate-300 rounded-lg p-2 hover:bg-slate-400 hover:cursor-pointer"
+        >
+          Return All
+        </button>
+      </div>
     </div>
   </main>
 </template>

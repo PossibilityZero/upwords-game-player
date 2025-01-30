@@ -1,15 +1,18 @@
 <script setup>
 const props = defineProps({
   tileBag: Object,
+  overrideTitle: String,
 })
 
+const defaultTitle = 'Tile Bag'
 const tileBag = props.tileBag
+const title = props.overrideTitle || defaultTitle
 </script>
 
 <template>
   <div id="tile-bag-container" class="container p-2 rounded-xl bg-zinc-200 w-96 h-[20rem]">
     <div class="flex">
-      <h2 class="text-3xl mb-2">Tile Bag</h2>
+      <h2 class="text-3xl mb-2">{{ title }}</h2>
       <span class="text-right grow text-xl">Remaining tiles: {{ tileBag.tileCount }}</span>
     </div>
     <span
