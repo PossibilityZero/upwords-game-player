@@ -9,7 +9,6 @@ import { PlayDirection, UBFHelper, UpwordsGame, TileSet } from 'upwords-toolkit'
 import { wordList } from './wordList'
 
 const game = new UpwordsGame(wordList, 2, true)
-const boardStateKey = ref(0)
 const tileBagKey = ref(0)
 let tempDisplayFromPlayList = false
 const tempTiles = new Map()
@@ -48,7 +47,6 @@ function playMove(play) {
     game.drawSpecificTiles(game.currentPlayer, currentTilesString)
   } else {
     game.playMove(play)
-    tempTiles.clear()
   }
   refreshGameComponents()
 }
@@ -135,13 +133,13 @@ function viewCandidate(play) {
       tempTiles.set(coordString, { letter: tile.toUpperCase(), x, y })
     }
   }
-  boardStateKey.value += 1
+  boardContainerRef.value.update()
 }
 
 function clearCandidateFromPlayList() {
   if (tempDisplayFromPlayList) {
     tempTiles.clear()
-    boardStateKey.value += 1
+    boardContainerRef.value.update()
     tempDisplayFromPlayList = false
   }
 }
@@ -173,18 +171,17 @@ function focusBoard() {
 }
 
 function refreshGameComponents() {
-  boardStateKey.value += 1
+  tempTiles.clear()
+  boardContainerRef.value.update()
   tileBagKey.value += 1
   playListRef.value.update()
   playerDisplayRef.value.update()
 }
 
 function resetAllComponents() {
-  boardStateKey.value += 1
-  tileBagKey.value += 1
-  playListRef.value.update()
   playerDisplayRef.value.reset()
   saveManagerRef.value.reset()
+  refreshGameComponents()
 }
 
 document.body.classList.add('bg-slate-100')
@@ -201,7 +198,6 @@ document.body.classList.add('bg-slate-100')
       class="xl:px-4 sm:mx-4 my-2 grid auto-rows-auto auto-cols-auto place-content-center gap-2 lg:gap-5"
     >
       <BoardContainer
-        v-bind:key="boardStateKey"
         :board="game.getUBF()"
         :tempTiles="tempTiles"
         ref="boardContainerRef"

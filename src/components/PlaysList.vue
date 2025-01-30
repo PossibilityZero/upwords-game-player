@@ -1,11 +1,14 @@
 <script setup>
-import { reactive } from 'vue'
+import { ref, reactive } from 'vue'
 import { UpwordsWordFinder } from 'upwords-solver'
 import { wordList } from '../wordList'
 import SvgSortIcon from './svgIcons/SvgSortIcon.vue'
+import { PlayDirection } from 'upwords-toolkit'
 const props = defineProps({
   game: Object,
 })
+
+const applyBuilderFilter = ref(false)
 
 const game = props.game
 const validPlays = reactive([])
@@ -38,7 +41,10 @@ function composeSortFunctions(sortFuncArr) {
 
 function findPlays() {
   validPlays.length = 0
-  UpwordsWordFinder.findAllPossiblePlays(game.getUBF(), game.getTiles(game.currentPlayer))
+  const possibleMoves = UpwordsWordFinder.findAllPossiblePlays(
+    game.getUBF(),
+    game.getTiles(game.currentPlayer),
+  )
     .map((play) => ({
       play,
       status: game.checkMove(play, true),
@@ -52,7 +58,18 @@ function findPlays() {
       points: p.status.points,
       numTiles: p.numTiles,
     }))
-    .forEach((p) => validPlays.push(p))
+  if (applyBuilderFilter.value) {
+    possibleMoves
+      .filter((play) => {
+        return (
+          !applyBuilderFilter.value ||
+          (play.direction === PlayDirection.Horizontal && play.start[0] === 5)
+        )
+      })
+      .forEach((p) => validPlays.push(p))
+  } else {
+    possibleMoves.forEach((p) => validPlays.push(p))
+  }
 }
 
 function sortList() {
@@ -108,6 +125,8 @@ defineExpose({
     class="overflow-hidden rounded-lg bg-slate-200 w-[32rem] xl:w-[40rem] max-h-[50vh] select-none"
     @mouseleave="$emit('clearCandidate')"
   >
+    <label for="applyFilter">Apply filter: </label>
+    <input @change="update" name="applyFilter" type="checkbox" v-model="applyBuilderFilter" />
     <div class="px-1 grid grid-cols-5 text-lg bg-slate-300">
       <div><span>Word</span></div>
       <div><span>Direction</span></div>

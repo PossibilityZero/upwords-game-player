@@ -2,9 +2,10 @@
 import { ref } from 'vue'
 import SvgDeleteIcon from './svgIcons/SvgDeleteIcon.vue'
 import SvgLoadIcon from './svgIcons/SvgLoadIcon.vue'
+import { UpwordsGame } from 'upwords-toolkit'
 
 const props = defineProps({
-  game: Object,
+  game: UpwordsGame,
 })
 
 const emit = defineEmits(['newGame', 'loadGame'])
@@ -70,6 +71,24 @@ function deleteSave(id) {
   updateSavedGamesList()
 }
 
+function copyToClipboard(type) {
+  let copyText
+  switch (type) {
+    case 'game':
+      copyText = props.game.serialize()
+      break
+    case 'ubf':
+      copyText = JSON.stringify(props.game.getUBF())
+      break
+    case 'tiles':
+      copyText = props.game.getTileBag().listTiles()
+      break
+  }
+  if (copyText) {
+    navigator.clipboard.writeText(copyText)
+  }
+}
+
 function reset() {
   newGamePlayerCount.value = 2
   newGameAutomaticDraw.value = false
@@ -86,7 +105,7 @@ defineExpose({ reset })
       <h3 class="font-bold text-lg">New Game Setup</h3>
       <div class="py-1">
         <label>Automatic tile draw </label>
-        <input v-model="newGameAutomaticDraw" type="checkbox" name="manualTiles" value="vertical" />
+        <input v-model="newGameAutomaticDraw" type="checkbox" name="manualTiles" />
       </div>
       <div class="py-1">
         <label>Players (1 - 4) </label>
@@ -105,6 +124,27 @@ defineExpose({ reset })
       </button>
     </form>
 
+    <div class="my-2">
+      <button
+        class="py-1 px-1 mr-2 bg-slate-300 rounded hover:bg-slate-400 hover:cursor-pointer"
+        @click="copyToClipboard('tiles')"
+      >
+        Copy tilebag
+      </button>
+      <button
+        class="py-1 px-1 mr-2 bg-slate-300 rounded hover:bg-slate-400 hover:cursor-pointer"
+        @click="copyToClipboard('ubf')"
+      >
+        Copy board
+      </button>
+      <button
+        class="py-1 px-1 mr-2 bg-slate-300 rounded hover:bg-slate-400 hover:cursor-pointer"
+        @click="copyToClipboard('game')"
+      >
+        Copy game
+      </button>
+    </div>
+
     <form @submit.prevent="saveGame">
       <input
         v-model="saveGameName"
@@ -117,6 +157,7 @@ defineExpose({ reset })
         Save game
       </button>
     </form>
+
     <div>
       <div class="my-2" v-for="(saved, index) in savedGames" :key="index">
         <button

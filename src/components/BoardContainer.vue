@@ -20,36 +20,11 @@ let tempTiles = props.tempTiles
 
 const xCoord = (tileNum) => Math.floor(tileNum / 10)
 const yCoord = (tileNum) => tileNum % 10
-
 const boardTiles = reactive([])
-const randNum = Math.random()
-for (let i = 0; i < 100; i++) {
-  const x = xCoord(i)
-  const y = yCoord(i)
-  const getTempVal = () => tempTiles.get(`coord-${x}-${y}`)?.letter
-  boardTiles.push({
-    key: (i * randNum) % 1,
-    coordString: `coord-${x}-${y}`,
-    x,
-    y,
-    get currentHeight() {
-      return UBF.getHeightAt(props.board, [x, y])
-    },
-    get height() {
-      return UBF.getHeightAt(props.board, [x, y]) + (getTempVal() ? 1 : 0)
-    },
-    get currentLetter() {
-      return UBF.getLetterAt(props.board, [x, y])
-    },
-    get letter() {
-      return getTempVal() || UBF.getLetterAt(props.board, [x, y])
-    },
-    get isTemp() {
-      return !!getTempVal()
-    },
-    active: false,
-  })
-}
+
+;(function init() {
+  update()
+})()
 
 function selectTile(e) {
   deactivateAllTiles()
@@ -133,6 +108,38 @@ function handleBoardInput(key) {
   activeTile.key++
 }
 
+function update() {
+  boardTiles.length = 0
+  const randNum = Math.random()
+  for (let i = 0; i < 100; i++) {
+    const x = xCoord(i)
+    const y = yCoord(i)
+    const getTempVal = () => tempTiles.get(`coord-${x}-${y}`)?.letter
+    boardTiles.push({
+      key: (i * randNum) % 1,
+      coordString: `coord-${x}-${y}`,
+      x,
+      y,
+      get currentHeight() {
+        return UBF.getHeightAt(props.board, [x, y])
+      },
+      get height() {
+        return UBF.getHeightAt(props.board, [x, y]) + (getTempVal() ? 1 : 0)
+      },
+      get currentLetter() {
+        return UBF.getLetterAt(props.board, [x, y])
+      },
+      get letter() {
+        return getTempVal() || UBF.getLetterAt(props.board, [x, y])
+      },
+      get isTemp() {
+        return !!getTempVal()
+      },
+      active: false,
+    })
+  }
+}
+
 function unfocus() {
   deactivateAllTiles()
 }
@@ -140,6 +147,7 @@ function unfocus() {
 defineExpose({
   handleBoardInput,
   unfocus,
+  update,
 })
 </script>
 
