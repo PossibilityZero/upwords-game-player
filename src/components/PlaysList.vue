@@ -12,7 +12,7 @@ const props = defineProps({
 
 defineEmits(['clearFilter', 'viewCandidate', 'playCandidate', 'clearCandidate'])
 
-const excludeFilter = defineModel()
+const filterType = defineModel()
 
 const game = props.game
 const filterSet = props.filterTiles
@@ -81,13 +81,17 @@ function findPlays() {
     }))
   if (filterSet.size === 0) {
     possibleMoves.forEach((p) => validPlays.push(p))
-  } else if (excludeFilter.value) {
+  } else if (filterType.value === 'exclude') {
     possibleMoves
       .filter((play) => !getPlayCoords(play).map(coordToStr).some(filterSet.has.bind(filterSet)))
       .forEach((play) => validPlays.push(play))
-  } else {
+  } else if (filterType.value === 'only') {
     possibleMoves
       .filter((play) => getPlayCoords(play).map(coordToStr).every(filterSet.has.bind(filterSet)))
+      .forEach((play) => validPlays.push(play))
+  } else if (filterType.value === 'include') {
+    possibleMoves
+      .filter((play) => getPlayCoords(play).map(coordToStr).some(filterSet.has.bind(filterSet)))
       .forEach((play) => validPlays.push(play))
   }
 }
@@ -151,19 +155,30 @@ defineExpose({
       >
         Clear all
       </button>
-      <label class="mt-1 inline-flex items-center cursor-pointer">
-        <span class="mr-2">Include</span>
+      <span class="font-bold mr-2">Filter type:</span>
+      <label class="mr-2 inline-flex items-center cursor-pointer">
+        <span class="mr-1">Only</span>
+        <input @change="update" v-model="filterType" name="filterType" type="radio" value="only" />
+      </label>
+      <label class="mr-2 inline-flex items-center cursor-pointer">
+        <span class="mr-1">Exclude</span>
         <input
           @change="update"
-          v-model="excludeFilter"
-          type="checkbox"
-          value=""
-          class="sr-only peer"
+          v-model="filterType"
+          name="filterType"
+          type="radio"
+          value="exclude"
         />
-        <div
-          class="relative w-11 h-6 bg-emerald-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"
-        ></div>
-        <span class="ml-2">Exclude </span>
+      </label>
+      <label class="inline-flex items-center cursor-pointer">
+        <span class="mr-1">Include</span>
+        <input
+          @change="update"
+          v-model="filterType"
+          name="filterType"
+          type="radio"
+          value="include"
+        />
       </label>
     </div>
     <div

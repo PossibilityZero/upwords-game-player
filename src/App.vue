@@ -15,7 +15,7 @@ const tileBagKey = ref(0)
 const reservedTileBagKey = ref(0)
 let tempDisplayFromPlayList = false
 const tempTiles = new Map()
-const excludeFilter = ref(true)
+const filterType = ref('only')
 const filterTiles = new Set()
 const saveManagerRef = ref(null)
 const boardContainerRef = ref(null)
@@ -247,7 +247,7 @@ document.body.classList.add('bg-slate-100')
         :board="game.getUBF()"
         :tempTiles="tempTiles"
         :filterTiles="filterTiles"
-        :excludeFilter="excludeFilter"
+        :filterType="filterType"
         ref="boardContainerRef"
         class="row-start-1 row-span-2 2xl:w-[48rem] mx-auto md:row-start-1 md:col-start-2"
         @grab-focus="focusBoard"
@@ -302,7 +302,7 @@ document.body.classList.add('bg-slate-100')
         class="xl:col-start-1 xl:row-start-1 xl:row-span-4"
         :game="game"
         :filterTiles="filterTiles"
-        v-model="excludeFilter"
+        v-model="filterType"
         @clear-filter="clearFilter"
         @view-candidate="viewCandidate"
         @play-candidate="placeCandidate"

@@ -4,7 +4,7 @@ const props = defineProps({
   height: Number,
   active: Boolean,
   isFilter: Boolean,
-  excludeFilter: Boolean,
+  filterType: String,
   central: Boolean,
   temp: Boolean,
   inputHorizontal: Boolean,
@@ -93,10 +93,19 @@ function heightIndicatorColor(height, temp) {
 }
 
 function backgroundColor(isFilter) {
-  if (props.excludeFilter) {
-    return isFilter ? 'bg-red-400/30' : 'bg-slate-100'
+  if (!isFilter) {
+    return 'bg-slate-100'
   } else {
-    return isFilter ? 'bg-lime-500/30' : 'bg-slate-100'
+    switch (props.filterType) {
+      case 'only':
+        return 'bg-amber-400/20'
+      case 'exclude':
+        return 'bg-red-400/30'
+      case 'include':
+        return 'bg-lime-600/20'
+      default:
+        return 'bg-slate-100'
+    }
   }
 }
 

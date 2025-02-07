@@ -13,7 +13,7 @@ const props = defineProps({
   board: Array,
   tempTiles: Map,
   filterTiles: Set,
-  excludeFilter: Boolean,
+  filterType: String,
 })
 
 const emit = defineEmits(['grabFocus', 'toggleFilterTile'])
@@ -177,7 +177,7 @@ defineExpose({
         :letter="tile.letter"
         :active="tile.active"
         :isFilter="tile.isFilter"
-        :excludeFilter="props.excludeFilter"
+        :filterType="props.filterType"
         :temp="tile.isTemp"
         :inputHorizontal="inputDirection === HORZ"
         :central="[44, 45, 54, 55].includes(index)"
