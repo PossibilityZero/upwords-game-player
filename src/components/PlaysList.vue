@@ -8,6 +8,9 @@ const props = defineProps({
   game: Object,
 })
 
+defineEmits(['clearFilter', 'viewCandidate', 'playCandidate', 'clearCandidate'])
+
+const excludeFilter = defineModel()
 const applyBuilderFilter = ref(false)
 
 const game = props.game
@@ -121,51 +124,84 @@ defineExpose({
 </script>
 
 <template>
-  <div
-    class="overflow-hidden rounded-lg bg-slate-200 w-[32rem] xl:w-[40rem] max-h-[50vh] select-none"
-    @mouseleave="$emit('clearCandidate')"
-  >
-    <label for="applyFilter">Apply filter: </label>
-    <input @change="update" name="applyFilter" type="checkbox" v-model="applyBuilderFilter" />
-    <div class="px-1 grid grid-cols-5 text-lg bg-slate-300">
-      <div><span>Word</span></div>
-      <div><span>Direction</span></div>
-      <div @click="sortByPoints" class="hover:bg-slate-400">
-        <span
-          >Points
-          <SvgSortIcon class="inline-block size-6" v-bind="lookupSortAttributes(compareByPoints)" />
-        </span>
+  <div>
+    <div
+      class="overflow-hidden rounded-lg bg-slate-200 w-[32rem] xl:w-[40rem] max-h-[50vh] select-none"
+      @mouseleave="$emit('clearCandidate')"
+    >
+      <div class="px-1 grid grid-cols-5 text-lg bg-slate-300">
+        <div><span>Word</span></div>
+        <div><span>Direction</span></div>
+        <div @click="sortByPoints" class="hover:bg-slate-400">
+          <span
+            >Points
+            <SvgSortIcon
+              class="inline-block size-6"
+              v-bind="lookupSortAttributes(compareByPoints)"
+            />
+          </span>
+        </div>
+        <div @click="sortByTiles" class="hover:bg-slate-400">
+          <span
+            >Tiles
+            <SvgSortIcon
+              class="inline-block size-6"
+              v-bind="lookupSortAttributes(compareByNumTiles)"
+            />
+          </span>
+        </div>
+        <div @click="sortByPpt" class="hover:bg-slate-400">
+          <span
+            >Points / tile
+            <SvgSortIcon class="inline-block size-6" v-bind="lookupSortAttributes(compareByPpt)" />
+          </span>
+        </div>
       </div>
-      <div @click="sortByTiles" class="hover:bg-slate-400">
-        <span
-          >Tiles
-          <SvgSortIcon
-            class="inline-block size-6"
-            v-bind="lookupSortAttributes(compareByNumTiles)"
-          />
-        </span>
-      </div>
-      <div @click="sortByPpt" class="hover:bg-slate-400">
-        <span
-          >Points / tile
-          <SvgSortIcon class="inline-block size-6" v-bind="lookupSortAttributes(compareByPpt)" />
-        </span>
+      <div class="px-1 w-100% text-lg overflow-y-scroll no-scrollbar max-h-[45vh]">
+        <div
+          class="grid grid-cols-5 font-mono hover:bg-slate-300"
+          @mouseover="$emit('viewCandidate', play)"
+          @click="$emit('playCandidate', play)"
+          v-for="(play, index) in validPlays"
+          :key="index"
+        >
+          <span>{{ play.tiles.replace(/ /g, '.') }}</span>
+          <span>{{ play.direction === 0 ? 'Across' : 'Down' }}</span>
+          <span>{{ play.points }}</span>
+          <span>{{ play.numTiles }}</span>
+          <span>{{ (play.points / play.numTiles).toFixed(3) }}</span>
+        </div>
       </div>
     </div>
-    <div class="px-1 w-100% text-lg overflow-y-scroll no-scrollbar max-h-[50vh]">
-      <div
-        class="grid grid-cols-5 font-mono hover:bg-slate-300"
-        @mouseover="$emit('viewCandidate', play)"
-        @click="$emit('playCandidate', play)"
-        v-for="(play, index) in validPlays"
-        :key="index"
-      >
-        <span>{{ play.tiles.replace(/ /g, '.') }}</span>
-        <span>{{ play.direction === 0 ? 'Across' : 'Down' }}</span>
-        <span>{{ play.points }}</span>
-        <span>{{ play.numTiles }}</span>
-        <span>{{ (play.points / play.numTiles).toFixed(3) }}</span>
+    <div id="playsListFilterControls" class="mt-2 p-2 rounded-lg bg-slate-200">
+      <h3 class="font-bold text-lg">Basic B-word Filter</h3>
+      <div>
+        <label
+          >Apply filter:
+          <input @change="update" name="applyFilter" type="checkbox" v-model="applyBuilderFilter" />
+        </label>
       </div>
+      <h3 class="font-bold text-lg mt-2">Selected Tiles</h3>
+      <button
+        @click="$emit('clearFilter')"
+        class="block px-1 mr-2 bg-slate-600 text-white rounded hover:bg-slate-900 hover:cursor-pointer"
+      >
+        Clear all
+      </button>
+      <label class="mt-1 inline-flex items-center cursor-pointer">
+        <span class="mr-2">Include</span>
+        <input
+          @change="update"
+          v-model="excludeFilter"
+          type="checkbox"
+          value=""
+          class="sr-only peer"
+        />
+        <div
+          class="relative w-11 h-6 bg-emerald-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"
+        ></div>
+        <span class="ml-2">Exclude </span>
+      </label>
     </div>
   </div>
 </template>

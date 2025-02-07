@@ -15,6 +15,8 @@ const tileBagKey = ref(0)
 const reservedTileBagKey = ref(0)
 let tempDisplayFromPlayList = false
 const tempTiles = new Map()
+const excludeFilter = ref(true)
+const filterTiles = new Set()
 const saveManagerRef = ref(null)
 const boardContainerRef = ref(null)
 const playerDisplayRef = ref(null)
@@ -191,6 +193,21 @@ function focusBoard() {
   playerDisplayRef.value.unfocus()
 }
 
+function toggleFilterTile(x, y) {
+  const coordString = `coord-${x}-${y}`
+  if (filterTiles.has(coordString)) {
+    filterTiles.delete(coordString)
+  } else {
+    filterTiles.add(coordString)
+  }
+  boardContainerRef.value.update()
+}
+
+function clearFilter() {
+  filterTiles.clear()
+  refreshGameComponents()
+}
+
 function refreshTileBags() {
   tileBagKey.value++
   reservedTileBagKey.value++
@@ -206,6 +223,7 @@ function refreshGameComponents() {
 }
 
 function resetAllComponents() {
+  filterTiles.clear()
   playerDisplayRef.value.reset()
   saveManagerRef.value.reset()
   refreshGameComponents()
@@ -227,9 +245,12 @@ document.body.classList.add('bg-slate-100')
       <BoardContainer
         :board="game.getUBF()"
         :tempTiles="tempTiles"
+        :filterTiles="filterTiles"
+        :excludeFilter="excludeFilter"
         ref="boardContainerRef"
         class="row-start-1 row-span-2 2xl:w-[48rem] mx-auto md:row-start-1 md:col-start-2"
         @grab-focus="focusBoard"
+        @toggle-filter-tile="toggleFilterTile"
       />
       <div class="xl:col-start-2 xl:row-start-3">
         <button
@@ -261,7 +282,7 @@ document.body.classList.add('bg-slate-100')
               class="sr-only peer"
             />
             <div
-              class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"
+              class="relative w-11 h-6 bg-gray-400 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"
             ></div>
             <span class="ms-2">Automatic Tile Draw</span>
           </label>
@@ -277,8 +298,10 @@ document.body.classList.add('bg-slate-100')
       />
       <PlaysList
         ref="playListRef"
-        class="row-start-9 row-span-2 md:col-start-1 md:row-start-1 md:row-span-5"
+        class="xl:col-start-1 xl:row-start-1 xl:row-span-4"
         :game="game"
+        v-model="excludeFilter"
+        @clear-filter="clearFilter"
         @view-candidate="viewCandidate"
         @play-candidate="placeCandidate"
         @clear-candidate="clearCandidateFromPlayList"

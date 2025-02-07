@@ -12,11 +12,14 @@ function toggleInputDirection() {
 const props = defineProps({
   board: Array,
   tempTiles: Map,
+  filterTiles: Set,
+  excludeFilter: Boolean,
 })
 
-const emit = defineEmits(['grabFocus'])
+const emit = defineEmits(['grabFocus', 'toggleFilterTile'])
 
-let tempTiles = props.tempTiles
+const tempTiles = props.tempTiles
+const filterTiles = props.filterTiles
 
 const xCoord = (tileNum) => Math.floor(tileNum / 10)
 const yCoord = (tileNum) => tileNum % 10
@@ -27,9 +30,15 @@ const boardTiles = reactive([])
 })()
 
 function selectTile(e) {
-  deactivateAllTiles()
-  activateTile(e.currentTarget.dataset.tileX, e.currentTarget.dataset.tileY)
-  emit('grabFocus')
+  const x = e.currentTarget.dataset.tileX
+  const y = e.currentTarget.dataset.tileY
+  if (e.shiftKey) {
+    emit('toggleFilterTile', x, y)
+  } else {
+    deactivateAllTiles()
+    activateTile(x, y)
+    emit('grabFocus')
+  }
 }
 
 function activateTile(x, y) {
@@ -114,10 +123,11 @@ function update() {
   for (let i = 0; i < 100; i++) {
     const x = xCoord(i)
     const y = yCoord(i)
-    const getTempVal = () => tempTiles.get(`coord-${x}-${y}`)?.letter
+    const coordString = `coord-${x}-${y}`
+    const getTempVal = () => tempTiles.get(coordString)?.letter
     boardTiles.push({
       key: (i * randNum) % 1,
-      coordString: `coord-${x}-${y}`,
+      coordString,
       x,
       y,
       get currentHeight() {
@@ -136,6 +146,7 @@ function update() {
         return !!getTempVal()
       },
       active: false,
+      isFilter: filterTiles.has(coordString),
     })
   }
 }
@@ -165,6 +176,8 @@ defineExpose({
         :height="tile.height"
         :letter="tile.letter"
         :active="tile.active"
+        :isFilter="tile.isFilter"
+        :excludeFilter="props.excludeFilter"
         :temp="tile.isTemp"
         :inputHorizontal="inputDirection === HORZ"
         :central="[44, 45, 54, 55].includes(index)"

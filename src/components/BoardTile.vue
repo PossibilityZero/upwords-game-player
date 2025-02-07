@@ -1,8 +1,10 @@
 <script setup>
-defineProps({
+const props = defineProps({
   letter: String,
   height: Number,
   active: Boolean,
+  isFilter: Boolean,
+  excludeFilter: Boolean,
   central: Boolean,
   temp: Boolean,
   inputHorizontal: Boolean,
@@ -90,6 +92,14 @@ function heightIndicatorColor(height, temp) {
   }
 }
 
+function backgroundColor(isFilter) {
+  if (props.excludeFilter) {
+    return isFilter ? 'bg-red-400/30' : 'bg-slate-100'
+  } else {
+    return isFilter ? 'bg-lime-500/30' : 'bg-slate-100'
+  }
+}
+
 function arrowRight(active, horizontal) {
   if (!active || !horizontal) {
     return 'hidden'
@@ -109,7 +119,8 @@ function arrowDown(active, horizontal) {
     :class="`
       ${tileShadow(height, active)}
       ${borderStyle(height)}
-      ${borderColorOuter(active, temp, height)}`"
+      ${borderColorOuter(active, temp, height)}
+      ${backgroundColor(isFilter)}`"
   >
     <div class="border-2" :class="`${borderStyle(height)} ${borderColor(active, temp, height)}`">
       <div class="grid grid-cols-5 grid-rows-5 aspect-square">
