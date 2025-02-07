@@ -8,11 +8,10 @@ const props = defineProps({
   game: UpwordsGame,
 })
 
-const emit = defineEmits(['newGame', 'saveGame', 'loadGame'])
+const emit = defineEmits(['newGame', 'loadGame'])
 const saveManagerKey = ref(0)
 const saveGameName = ref('')
 const newGamePlayerCount = ref(2)
-const newGameAutomaticDraw = ref(false)
 
 const savedGames = ref(getSavedGames())
 
@@ -21,7 +20,12 @@ const savedGames = ref(getSavedGames())
 })()
 
 function generateAutomaticSaveName(granular = false) {
+  const SECONDS_PER_MINUTE = 60
+  const MILLISECONDS_PER_SECOND = 1000
   const timeNow = new Date()
+  timeNow.setTime(
+    timeNow.getTime() - timeNow.getTimezoneOffset() * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND,
+  )
   if (granular) {
     return `Saved Game (${timeNow.toISOString()})`
   } else {
@@ -30,22 +34,21 @@ function generateAutomaticSaveName(granular = false) {
 }
 
 function getSavedGames() {
-  return Object.keys(JSON.parse(localStorage.getItem('saved-games') || {}))
+  return Object.keys(JSON.parse(localStorage.getItem('saved-games') || '{}'))
 }
 
 function updateSavedGamesList() {
   savedGames.value.length = 0
-  Object.keys(JSON.parse(localStorage.getItem('saved-games') || {})).forEach((gameId) => {
+  Object.keys(JSON.parse(localStorage.getItem('saved-games') || '{}')).forEach((gameId) => {
     savedGames.value.push(gameId)
   })
 }
 
 function newGame() {
-  emit('newGame', newGamePlayerCount.value, !newGameAutomaticDraw.value)
+  emit('newGame', newGamePlayerCount.value)
 }
 
 function saveGame() {
-  emit('saveGame')
   const gameId = saveGameName.value || generateAutomaticSaveName(true)
   const savedGames = JSON.parse(localStorage.getItem('saved-games')) || {}
   savedGames[gameId] = props.game.serialize()
@@ -92,7 +95,6 @@ function copyToClipboard(type) {
 
 function reset() {
   newGamePlayerCount.value = 2
-  newGameAutomaticDraw.value = false
   saveManagerKey.value++
   saveGameName.value = generateAutomaticSaveName()
 }
@@ -105,10 +107,6 @@ defineExpose({ reset })
     <form class="bg-zinc-200 rounded-lg p-2 mb-2" @submit.prevent="newGame">
       <h3 class="font-bold text-lg">New Game Setup</h3>
       <div class="py-1">
-        <label>Automatic tile draw </label>
-        <input v-model="newGameAutomaticDraw" type="checkbox" name="manualTiles" />
-      </div>
-      <div class="py-1">
         <label>Players (1 - 4) </label>
         <input
           v-model="newGamePlayerCount"
@@ -120,26 +118,28 @@ defineExpose({ reset })
           max="4"
         />
       </div>
-      <button class="mr-2 p-2 bg-slate-300 rounded-md hover:bg-slate-400 hover:cursor-pointer">
+      <button
+        class="mr-2 px-2 py-1 bg-slate-600 text-white rounded-md hover:bg-slate-900 hover:cursor-pointer"
+      >
         New game
       </button>
     </form>
 
-    <div class="my-2">
+    <div class="my-3">
       <button
-        class="py-1 px-1 mr-2 bg-slate-300 rounded hover:bg-slate-400 hover:cursor-pointer"
+        class="px-1 mr-2 bg-slate-300 rounded hover:bg-slate-400 hover:cursor-pointer"
         @click="copyToClipboard('tiles')"
       >
         Copy tilebag
       </button>
       <button
-        class="py-1 px-1 mr-2 bg-slate-300 rounded hover:bg-slate-400 hover:cursor-pointer"
+        class="px-1 mr-2 bg-slate-300 rounded hover:bg-slate-400 hover:cursor-pointer"
         @click="copyToClipboard('ubf')"
       >
         Copy board
       </button>
       <button
-        class="py-1 px-1 mr-2 bg-slate-300 rounded hover:bg-slate-400 hover:cursor-pointer"
+        class="px-1 mr-2 bg-slate-300 rounded hover:bg-slate-400 hover:cursor-pointer"
         @click="copyToClipboard('game')"
       >
         Copy game
@@ -151,10 +151,10 @@ defineExpose({ reset })
         v-model="saveGameName"
         name="saveName"
         type="text"
-        class="px-1 mb-1 w-80 rounded bg-white"
+        class="px-1 mb-1 w-60 rounded bg-white"
         autocomplete="off"
       />
-      <button class="mx-2 p-2 bg-slate-300 rounded-md hover:bg-slate-400 hover:cursor-pointer">
+      <button class="mx-2 px-1 bg-slate-300 rounded-md hover:bg-slate-400 hover:cursor-pointer">
         Save game
       </button>
     </form>

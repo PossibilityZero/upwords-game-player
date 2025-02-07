@@ -1,6 +1,7 @@
 <script setup>
 import BoardContainer from './components/BoardContainer.vue'
 import TileBagContainer from './components/TileBagContainer.vue'
+import ReservedTilesControls from './components/ReservedTilesControls.vue'
 import PlayerDisplay from './components/PlayerDisplay.vue'
 import PlaysList from './components/PlaysList.vue'
 import SaveManager from './components/SaveManager.vue'
@@ -9,6 +10,7 @@ import { PlayDirection, UBFHelper, UpwordsGame, TileSet } from 'upwords-toolkit'
 import { wordList } from './wordList'
 
 const game = new UpwordsGame(wordList, 2, true)
+const automaticDraw = ref(false)
 const tileBagKey = ref(0)
 const reservedTileBagKey = ref(0)
 let tempDisplayFromPlayList = false
@@ -17,20 +19,22 @@ const saveManagerRef = ref(null)
 const boardContainerRef = ref(null)
 const playerDisplayRef = ref(null)
 const playListRef = ref(null)
-const reserveTileString = ref('')
-const returnTileString = ref('')
-const reservedTileSet = new TileSet()
 
-function startNewGame(playerCount, manualTiles) {
-  const newGameState = new UpwordsGame(wordList, playerCount, manualTiles).serialize()
+function startNewGame(playerCount) {
+  const newGameState = new UpwordsGame(wordList, playerCount, !automaticDraw.value).serialize()
   game.loadGameFromSerialized(newGameState)
   resetAllComponents()
 }
 
 function loadGame(serialized) {
   game.loadGameFromSerialized(serialized)
-  reservedTileSet.deleteAllTiles()
+  automaticDraw.value = game.automaticDraw
   refreshGameComponents()
+}
+
+function updateAutoDraw() {
+  console.log(automaticDraw.value)
+  game.automaticDraw = automaticDraw.value
 }
 
 function playMove(play) {
@@ -166,36 +170,6 @@ function returnTile(player, returnTile) {
   tileBagKey.value++
 }
 
-function reserveTiles() {
-  const transferedTiles = TileSet.tilesFromString(reserveTileString.value)
-  if (game.getTileBag().hasTiles(transferedTiles)) {
-    game.getTileBag().removeTiles(transferedTiles)
-    reservedTileSet.addTiles(transferedTiles)
-    reserveTileString.value = ''
-    tileBagKey.value++
-    reservedTileBagKey.value++
-  }
-}
-
-function returnSpecificReserved() {
-  const transferedTiles = TileSet.tilesFromString(returnTileString.value)
-  if (reservedTileSet.hasTiles(transferedTiles)) {
-    reservedTileSet.removeTiles(transferedTiles)
-    game.getTileBag().addTiles(transferedTiles)
-    returnTileString.value = ''
-    tileBagKey.value++
-    reservedTileBagKey.value++
-  }
-}
-
-function returnReserved() {
-  const returning = reservedTileSet.getTiles()
-  game.getTileBag().addTiles(returning)
-  reservedTileSet.deleteAllTiles()
-  tileBagKey.value++
-  reservedTileBagKey.value++
-}
-
 function focusTileRack(id) {
   playerDisplayRef.value.unfocus(id)
   boardContainerRef.value.unfocus()
@@ -205,17 +179,21 @@ function focusBoard() {
   playerDisplayRef.value.unfocus()
 }
 
+function refreshTileBags() {
+  tileBagKey.value++
+  reservedTileBagKey.value++
+}
+
 function refreshGameComponents() {
   tempTiles.clear()
   boardContainerRef.value.update()
-  tileBagKey.value += 1
-  reservedTileBagKey.value += 1
+  tileBagKey.value++
+  reservedTileBagKey.value++
   playListRef.value.update()
   playerDisplayRef.value.update()
 }
 
 function resetAllComponents() {
-  reservedTileSet.deleteAllTiles()
   playerDisplayRef.value.reset()
   saveManagerRef.value.reset()
   refreshGameComponents()
@@ -242,12 +220,26 @@ document.body.classList.add('bg-slate-100')
         @grab-focus="focusBoard"
       />
       <div class="xl:col-start-2 xl:row-start-3">
-        <button class="bg-slate-300 rounded-lg p-2 hover:bg-slate-400" @click="skipTurn">
+        <button class="bg-slate-300 rounded-md px-2 py-1 hover:bg-slate-400" @click="skipTurn">
           Skip turn
         </button>
-        <button class="bg-slate-300 rounded-lg p-2 mx-2 hover:bg-slate-400" @click="undoTurn">
+        <button class="bg-slate-300 rounded-md px-2 py-1 mx-2 hover:bg-slate-400" @click="undoTurn">
           Undo turn
         </button>
+
+        <label class="mx-2 inline-flex items-center cursor-pointer">
+          <input
+            @change="updateAutoDraw"
+            v-model="automaticDraw"
+            type="checkbox"
+            value=""
+            class="sr-only peer"
+          />
+          <div
+            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"
+          ></div>
+          <span class="ms-2">Automatic Tile Draw</span>
+        </label>
       </div>
       <PlayerDisplay
         class="container mx-auto max-w-lg min-w-64 row-span-1 lg:w-[20rem] 2xl:w-[32rem] md:col-start-2"
@@ -256,11 +248,6 @@ document.body.classList.add('bg-slate-100')
         @grab-focus="focusTileRack"
         @draw-tile="drawTile"
         @return-tile="returnTile"
-      />
-      <TileBagContainer
-        v-bind:key="tileBagKey"
-        :tile-bag="game.getTileBag()"
-        class="container xl:row-start-1 xl:col-start-3"
       />
       <PlaysList
         ref="playListRef"
@@ -272,39 +259,29 @@ document.body.classList.add('bg-slate-100')
       />
       <SaveManager
         ref="saveManagerRef"
-        class="xl:col-start-3 xl:row-start-2 row-span-3"
+        class="xl:col-start-3 xl:row-start-3 row-span-3"
         :game="game"
         @new-game="startNewGame"
         @load-game="loadGame"
-        @save-game="returnReserved"
       />
-      <div class="xl:col-start-1 xl:row-start-4">
+      <div class="xl:col-start-3 xl:row-start-1 xl:row-span-2">
         <TileBagContainer
-          v-bind:key="reservedTileBagKey"
-          :tile-bag="reservedTileSet"
-          :override-title="'Reserved tiles'"
+          v-bind:key="tileBagKey"
+          :tile-bag="game.getTileBag()"
+          :show-all-letters="true"
           class="container"
         />
-        <form @submit.prevent="reserveTiles">
-          <label>Reserve tiles:</label>
-          <input v-model="reserveTileString" type="text" class="px-1 mx-1 w-80 rounded bg-white" />
-          <button class="bg-slate-300 rounded-lg p-2 mx-2 hover:bg-slate-400 hover:cursor-pointer">
-            Reserve
-          </button>
-        </form>
-        <form @submit.prevent="returnSpecificReserved">
-          <label>Return reserved tiles:</label>
-          <input v-model="returnTileString" type="text" class="px-1 mx-1 w-80 rounded bg-white" />
-          <button class="bg-slate-300 rounded-lg p-2 mx-2 hover:bg-slate-400 hover:cursor-pointer">
-            Return
-          </button>
-        </form>
-        <button
-          @click="returnReserved"
-          class="bg-slate-300 rounded-lg p-2 hover:bg-slate-400 hover:cursor-pointer"
-        >
-          Return All
-        </button>
+        <ReservedTilesControls
+          class="mt-2"
+          :game="game"
+          @reserved-tiles-updated="refreshTileBags"
+        />
+        <TileBagContainer
+          v-bind:key="reservedTileBagKey"
+          :tile-bag="game.getReservedTiles()"
+          :override-title="'Reserved tiles'"
+          class="container mt-4"
+        />
       </div>
     </div>
   </main>
