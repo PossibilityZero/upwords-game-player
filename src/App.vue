@@ -201,6 +201,7 @@ function toggleFilterTile(x, y) {
     filterTiles.add(coordString)
   }
   boardContainerRef.value.update()
+  playListRef.value.update()
 }
 
 function clearFilter() {
@@ -300,6 +301,7 @@ document.body.classList.add('bg-slate-100')
         ref="playListRef"
         class="xl:col-start-1 xl:row-start-1 xl:row-span-4"
         :game="game"
+        :filterTiles="filterTiles"
         v-model="excludeFilter"
         @clear-filter="clearFilter"
         @view-candidate="viewCandidate"

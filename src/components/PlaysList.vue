@@ -1,19 +1,21 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { reactive } from 'vue'
 import { UpwordsWordFinder } from 'upwords-solver'
 import { wordList } from '../wordList'
 import SvgSortIcon from './svgIcons/SvgSortIcon.vue'
-import { PlayDirection } from 'upwords-toolkit'
+import { UBFHelper } from 'upwords-toolkit'
+
 const props = defineProps({
   game: Object,
+  filterTiles: Set,
 })
 
 defineEmits(['clearFilter', 'viewCandidate', 'playCandidate', 'clearCandidate'])
 
 const excludeFilter = defineModel()
-const applyBuilderFilter = ref(false)
 
 const game = props.game
+const filterSet = props.filterTiles
 const validPlays = reactive([])
 const sortFuncs = reactive([])
 const compareByPoints = (a, b) => a.points - b.points
@@ -42,9 +44,25 @@ function composeSortFunctions(sortFuncArr) {
   update()
 })()
 
+function coordToStr(coord) {
+  const [x, y] = coord
+  return `coord-${x}-${y}`
+}
+
+function getPlayCoords(play) {
+  const allPlayCoords = []
+  const startCoord = play.start
+  for (let i = 0; i < play.tiles.length; i++) {
+    if (play.tiles[i] !== ' ') {
+      allPlayCoords.push(UBFHelper.offsetCoord(startCoord, play.direction, i))
+    }
+  }
+  return allPlayCoords
+}
+
 function findPlays() {
   validPlays.length = 0
-  const possibleMoves = UpwordsWordFinder.findAllPossiblePlays(
+  let possibleMoves = UpwordsWordFinder.findAllPossiblePlays(
     game.getUBF(),
     game.getTiles(game.currentPlayer),
   )
@@ -61,17 +79,16 @@ function findPlays() {
       points: p.status.points,
       numTiles: p.numTiles,
     }))
-  if (applyBuilderFilter.value) {
-    possibleMoves
-      .filter((play) => {
-        return (
-          !applyBuilderFilter.value ||
-          (play.direction === PlayDirection.Horizontal && play.start[0] === 5)
-        )
-      })
-      .forEach((p) => validPlays.push(p))
-  } else {
+  if (filterSet.size === 0) {
     possibleMoves.forEach((p) => validPlays.push(p))
+  } else if (excludeFilter.value) {
+    possibleMoves
+      .filter((play) => !getPlayCoords(play).map(coordToStr).some(filterSet.has.bind(filterSet)))
+      .forEach((play) => validPlays.push(play))
+  } else {
+    possibleMoves
+      .filter((play) => getPlayCoords(play).map(coordToStr).every(filterSet.has.bind(filterSet)))
+      .forEach((play) => validPlays.push(play))
   }
 }
 
@@ -125,6 +142,30 @@ defineExpose({
 
 <template>
   <div>
+    <div id="playsListFilterControls" class="mb-1 px-2 pb-2 rounded-lg bg-slate-200">
+      <h2 class="font-bold text-2xl">Filters</h2>
+      <h3 class="font-bold text-lg">Selected Tiles</h3>
+      <button
+        @click="$emit('clearFilter')"
+        class="block px-1 mr-2 bg-slate-600 text-white rounded hover:bg-slate-900 hover:cursor-pointer"
+      >
+        Clear all
+      </button>
+      <label class="mt-1 inline-flex items-center cursor-pointer">
+        <span class="mr-2">Include</span>
+        <input
+          @change="update"
+          v-model="excludeFilter"
+          type="checkbox"
+          value=""
+          class="sr-only peer"
+        />
+        <div
+          class="relative w-11 h-6 bg-emerald-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"
+        ></div>
+        <span class="ml-2">Exclude </span>
+      </label>
+    </div>
     <div
       class="overflow-hidden rounded-lg bg-slate-200 w-[32rem] xl:w-[40rem] max-h-[50vh] select-none"
       @mouseleave="$emit('clearCandidate')"
@@ -172,36 +213,6 @@ defineExpose({
           <span>{{ (play.points / play.numTiles).toFixed(3) }}</span>
         </div>
       </div>
-    </div>
-    <div id="playsListFilterControls" class="mt-2 p-2 rounded-lg bg-slate-200">
-      <h3 class="font-bold text-lg">Basic B-word Filter</h3>
-      <div>
-        <label
-          >Apply filter:
-          <input @change="update" name="applyFilter" type="checkbox" v-model="applyBuilderFilter" />
-        </label>
-      </div>
-      <h3 class="font-bold text-lg mt-2">Selected Tiles</h3>
-      <button
-        @click="$emit('clearFilter')"
-        class="block px-1 mr-2 bg-slate-600 text-white rounded hover:bg-slate-900 hover:cursor-pointer"
-      >
-        Clear all
-      </button>
-      <label class="mt-1 inline-flex items-center cursor-pointer">
-        <span class="mr-2">Include</span>
-        <input
-          @change="update"
-          v-model="excludeFilter"
-          type="checkbox"
-          value=""
-          class="sr-only peer"
-        />
-        <div
-          class="relative w-11 h-6 bg-emerald-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"
-        ></div>
-        <span class="ml-2">Exclude </span>
-      </label>
     </div>
   </div>
 </template>
