@@ -60,6 +60,18 @@ function playMove(play) {
   refreshGameComponents()
 }
 
+function swapTile() {
+  const { playerId, letter } = playerDisplayRef.value.getActiveTile()
+  if (game.currentPlayer === playerId && game.getTileBag().tileCount > 0 && letter) {
+    game.skipTurn()
+    game.returnSpecificTiles(playerId, letter)
+    game.setAsideTiles(letter) // reserve the returned tile while drawing, so as not to draw it back
+    game.drawRandomTiles(playerId, 1)
+    game.returnReservedTiles(letter)
+    refreshGameComponents()
+  }
+}
+
 function skipTurn() {
   game.skipTurn()
   refreshGameComponents()
@@ -220,26 +232,40 @@ document.body.classList.add('bg-slate-100')
         @grab-focus="focusBoard"
       />
       <div class="xl:col-start-2 xl:row-start-3">
-        <button class="bg-slate-300 rounded-md px-2 py-1 hover:bg-slate-400" @click="skipTurn">
+        <button
+          class="bg-slate-300 rounded-md px-2 py-1 mr-2 hover:bg-slate-400 hover:cursor-pointer"
+          @click="skipTurn"
+        >
           Skip turn
         </button>
-        <button class="bg-slate-300 rounded-md px-2 py-1 mx-2 hover:bg-slate-400" @click="undoTurn">
+        <button
+          class="bg-slate-300 rounded-md px-2 py-1 mx-2 hover:bg-slate-400 hover:cursor-pointer"
+          @click="swapTile"
+        >
+          Swap tile
+        </button>
+        <button
+          class="bg-slate-300 rounded-md px-2 py-1 mx-2 hover:bg-slate-400 hover:cursor-pointer"
+          @click="undoTurn"
+        >
           Undo turn
         </button>
 
-        <label class="mx-2 inline-flex items-center cursor-pointer">
-          <input
-            @change="updateAutoDraw"
-            v-model="automaticDraw"
-            type="checkbox"
-            value=""
-            class="sr-only peer"
-          />
-          <div
-            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"
-          ></div>
-          <span class="ms-2">Automatic Tile Draw</span>
-        </label>
+        <div class="mt-2">
+          <label class="inline-flex items-center cursor-pointer">
+            <input
+              @change="updateAutoDraw"
+              v-model="automaticDraw"
+              type="checkbox"
+              value=""
+              class="sr-only peer"
+            />
+            <div
+              class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"
+            ></div>
+            <span class="ms-2">Automatic Tile Draw</span>
+          </label>
+        </div>
       </div>
       <PlayerDisplay
         class="container mx-auto max-w-lg min-w-64 row-span-1 lg:w-[20rem] 2xl:w-[32rem] md:col-start-2"

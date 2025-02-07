@@ -36,6 +36,11 @@ function select(tile) {
   tile.active = true
 }
 
+function getActiveTile() {
+  const activeTile = rackTiles.find((tile) => tile.active)
+  return { playerId, letter: activeTile?.letter }
+}
+
 function deactivateAllTiles() {
   rackTiles.forEach((tile) => (tile.active = false))
 }
@@ -65,6 +70,8 @@ function handleRackInput(key) {
     activeTile.letter = letter
     moveActiveTileRight(activeTile)
     emit('drawTile', playerId, letter, returnLetter)
+  } else if (key === 'Escape') {
+    deactivateAllTiles()
   } else if (key === 'Backspace') {
     if (returnLetter.length > 0) {
       activeTile.letter = ''
@@ -99,6 +106,7 @@ function unfocus(source) {
 defineExpose({
   handleRackInput,
   unfocus,
+  getActiveTile,
 })
 </script>
 

@@ -24,6 +24,15 @@ function unfocus(exclude) {
   tileRackRef.value.forEach((rack) => rack.unfocus(exclude))
 }
 
+function getActiveTile() {
+  return (
+    tileRackRef.value.map((rack) => rack.getActiveTile()).find((tile) => tile.letter) || {
+      playerId: null,
+      letter: null,
+    }
+  )
+}
+
 function reset() {
   players.value.length = 0
   for (let i = 0; i < props.game.playerCount; i++) {
@@ -39,7 +48,7 @@ function update() {
   players.value.forEach((player) => player.key++)
 }
 
-defineExpose({ reset, update, unfocus, handleInput })
+defineExpose({ reset, update, unfocus, handleInput, getActiveTile })
 </script>
 
 <template>
