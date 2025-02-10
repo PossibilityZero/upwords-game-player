@@ -131,6 +131,7 @@ document.addEventListener('keydown', (e) => {
     playerDisplayRef.value.handleInput(e.key)
     boardContainerRef.value.handleBoardInput(e.key)
   } else if (e.key === 'Enter') {
+    e.preventDefault()
     const play = makePlayFromTempTiles(tempTiles)
     if (play) {
       playMove(play)
@@ -299,7 +300,7 @@ document.body.classList.add('bg-slate-100')
       />
       <PlaysList
         ref="playListRef"
-        class="xl:col-start-1 xl:row-start-1 xl:row-span-4"
+        class="xl:col-start-1 xl:row-start-1 xl:row-span-2"
         :game="game"
         :filterTiles="filterTiles"
         v-model="filterType"

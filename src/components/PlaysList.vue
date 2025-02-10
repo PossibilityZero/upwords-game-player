@@ -182,13 +182,13 @@ defineExpose({
       </label>
     </div>
     <div
-      class="overflow-hidden rounded-lg bg-slate-200 w-[32rem] xl:w-[40rem] max-h-[50vh] select-none"
+      class="overflow-hidden rounded-lg bg-slate-200 w-[32rem] xl:w-[40rem] max-h-[50vh] xl:min-h-[45vh] select-none"
       @mouseleave="$emit('clearCandidate')"
     >
-      <div class="px-1 grid grid-cols-5 text-lg bg-slate-300">
-        <div><span>Word</span></div>
+      <div class="grid grid-cols-5 text-lg bg-slate-300">
+        <div><span class="pl-1">Word</span></div>
         <div><span>Direction</span></div>
-        <div @click="sortByPoints" class="hover:bg-slate-400">
+        <div @click="sortByPoints" class="px-1 hover:bg-slate-400">
           <span
             >Points
             <SvgSortIcon
@@ -197,7 +197,7 @@ defineExpose({
             />
           </span>
         </div>
-        <div @click="sortByTiles" class="hover:bg-slate-400">
+        <div @click="sortByTiles" class="px-1 hover:bg-slate-400">
           <span
             >Tiles
             <SvgSortIcon
@@ -206,14 +206,14 @@ defineExpose({
             />
           </span>
         </div>
-        <div @click="sortByPpt" class="hover:bg-slate-400">
+        <div @click="sortByPpt" class="px-1 hover:bg-slate-400">
           <span
             >Points / tile
             <SvgSortIcon class="inline-block size-6" v-bind="lookupSortAttributes(compareByPpt)" />
           </span>
         </div>
       </div>
-      <div class="px-1 w-100% text-lg overflow-y-scroll no-scrollbar max-h-[45vh]">
+      <div class="w-100% text-lg overflow-y-scroll no-scrollbar max-h-[45vh]">
         <div
           class="grid grid-cols-5 font-mono hover:bg-slate-300"
           @mouseover="$emit('viewCandidate', play)"
@@ -221,11 +221,11 @@ defineExpose({
           v-for="(play, index) in validPlays"
           :key="index"
         >
-          <span>{{ play.tiles.replace(/ /g, '.') }}</span>
-          <span>{{ play.direction === 0 ? 'Across' : 'Down' }}</span>
-          <span>{{ play.points }}</span>
-          <span>{{ play.numTiles }}</span>
-          <span>{{ (play.points / play.numTiles).toFixed(3) }}</span>
+          <span class="px-1">{{ play.tiles.replace(/ /g, '.') }}</span>
+          <span class="px-1">{{ play.direction === 0 ? 'Across' : 'Down' }}</span>
+          <span class="px-1">{{ play.points }}</span>
+          <span class="px-1">{{ play.numTiles }}</span>
+          <span class="px-1">{{ (play.points / play.numTiles).toFixed(3) }}</span>
         </div>
       </div>
     </div>
