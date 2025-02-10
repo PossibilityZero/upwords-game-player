@@ -10,7 +10,7 @@ const props = defineProps({
   filterTiles: Set,
 })
 
-defineEmits(['clearFilter', 'viewCandidate', 'playCandidate', 'clearCandidate'])
+const emit = defineEmits(['clearFilter', 'viewCandidate', 'playCandidate', 'clearCandidate'])
 
 const filterType = defineModel()
 
@@ -137,12 +137,25 @@ function lookupSortAttributes(compFunc) {
   }
 }
 
+function detectHovered() {
+  const hovered = Array.from(document.querySelectorAll('#playsList>.playsListItem')).find((e) =>
+    e.matches(':hover'),
+  )
+  return displayedPlays[hovered?.dataset?.listIndex]
+}
+
 function update(resetList = true) {
   if (resetList) {
     findPlays()
   }
   filterDisplayed()
   sortDisplayed()
+  if (resetList) {
+    const hoveredPlay = detectHovered()
+    if (hoveredPlay) {
+      emit('viewCandidate', hoveredPlay)
+    }
+  }
 }
 
 defineExpose({
@@ -219,12 +232,13 @@ defineExpose({
           </span>
         </div>
       </div>
-      <div class="w-100% text-lg overflow-y-scroll no-scrollbar max-h-[45vh]">
+      <div id="playsList" class="w-100% text-lg overflow-y-scroll no-scrollbar max-h-[45vh]">
         <div
-          class="grid grid-cols-5 font-mono hover:bg-slate-300"
+          class="playsListItem grid grid-cols-5 font-mono hover:bg-slate-300"
           @mouseover="$emit('viewCandidate', play)"
           @click="$emit('playCandidate', play)"
           v-for="(play, index) in displayedPlays"
+          v-bind:data-list-index="index"
           :key="index"
         >
           <span class="px-1">{{ play.tiles.replace(/ /g, '.') }}</span>
