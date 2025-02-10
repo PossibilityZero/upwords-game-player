@@ -35,7 +35,6 @@ function loadGame(serialized) {
 }
 
 function updateAutoDraw() {
-  console.log(automaticDraw.value)
   game.automaticDraw = automaticDraw.value
 }
 
@@ -201,13 +200,17 @@ function toggleFilterTile(x, y) {
   } else {
     filterTiles.add(coordString)
   }
-  boardContainerRef.value.update()
-  playListRef.value.update()
+  refreshPlaysListFilter()
 }
 
 function clearFilter() {
   filterTiles.clear()
-  refreshGameComponents()
+  refreshPlaysListFilter()
+}
+
+function refreshPlaysListFilter() {
+  boardContainerRef.value.update()
+  playListRef.value.update(false)
 }
 
 function refreshTileBags() {
@@ -235,10 +238,12 @@ document.body.classList.add('bg-slate-100')
 </script>
 
 <template>
-  <header>
-    <div class="container mx-auto">
-      <h1 class="my-4 text-5xl font-extrabold leading-none">Upwords Game</h1>
-    </div>
+  <header class="bg-slate-200">
+    <nav class="px-5 py-3 flex items-center space-x-12">
+      <h1 class="text-3xl text-slate-800 font-extrabold leading-none">
+        <a href="/">Upwords Game</a>
+      </h1>
+    </nav>
   </header>
   <main>
     <div

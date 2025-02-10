@@ -30,7 +30,7 @@ const displayLetters = props.showAllLetters
     >
       <span class="font-bold">{{ letter }} </span>
       <span
-        class="pl-2 pr-9 text-xl"
+        class="pl-1 pr-6 text-base"
         :class="tileBag.getLetter(letter) > 0 ? 'text-gray-600' : 'text-red-600'"
         >{{ tileBag.getLetter(letter) }}</span
       >

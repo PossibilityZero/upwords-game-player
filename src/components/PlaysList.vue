@@ -16,7 +16,8 @@ const filterType = defineModel()
 
 const game = props.game
 const filterSet = props.filterTiles
-const validPlays = reactive([])
+const validPlays = []
+const displayedPlays = reactive([])
 const sortFuncs = reactive([])
 const compareByPoints = (a, b) => a.points - b.points
 const compareByNumTiles = (a, b) => a.numTiles - b.numTiles
@@ -62,16 +63,13 @@ function getPlayCoords(play) {
 
 function findPlays() {
   validPlays.length = 0
-  let possibleMoves = UpwordsWordFinder.findAllPossiblePlays(
-    game.getUBF(),
-    game.getTiles(game.currentPlayer),
-  )
+  UpwordsWordFinder.findAllPossiblePlays(game.getUBF(), game.getTiles(game.currentPlayer))
     .map((play) => ({
       play,
       status: game.checkMove(play, true),
       numTiles: [...play.tiles].filter((t) => t !== ' ').length,
     }))
-    .filter((p) => p.status.isValid)
+    .filter((play) => play.status.isValid)
     .map((p) => ({
       tiles: p.play.tiles,
       start: p.play.start,
@@ -79,26 +77,31 @@ function findPlays() {
       points: p.status.points,
       numTiles: p.numTiles,
     }))
+    .forEach((play) => validPlays.push(play))
+}
+
+function filterDisplayed() {
+  displayedPlays.length = 0
   if (filterSet.size === 0) {
-    possibleMoves.forEach((p) => validPlays.push(p))
+    validPlays.forEach((p) => displayedPlays.push(p))
   } else if (filterType.value === 'exclude') {
-    possibleMoves
+    validPlays
       .filter((play) => !getPlayCoords(play).map(coordToStr).some(filterSet.has.bind(filterSet)))
-      .forEach((play) => validPlays.push(play))
+      .forEach((play) => displayedPlays.push(play))
   } else if (filterType.value === 'only') {
-    possibleMoves
+    validPlays
       .filter((play) => getPlayCoords(play).map(coordToStr).every(filterSet.has.bind(filterSet)))
-      .forEach((play) => validPlays.push(play))
+      .forEach((play) => displayedPlays.push(play))
   } else if (filterType.value === 'include') {
-    possibleMoves
+    validPlays
       .filter((play) => getPlayCoords(play).map(coordToStr).some(filterSet.has.bind(filterSet)))
-      .forEach((play) => validPlays.push(play))
+      .forEach((play) => displayedPlays.push(play))
   }
 }
 
-function sortList() {
+function sortDisplayed() {
   const compFunc = composeSortFunctions(sortFuncs)
-  validPlays.sort(compFunc)
+  displayedPlays.sort(compFunc)
 }
 
 function changeSortFunc(compFunc, reversed = false) {
@@ -112,17 +115,17 @@ function changeSortFunc(compFunc, reversed = false) {
 
 function sortByPoints() {
   changeSortFunc(compareByPoints, true)
-  sortList()
+  sortDisplayed()
 }
 
 function sortByTiles() {
   changeSortFunc(compareByNumTiles, true)
-  sortList()
+  sortDisplayed()
 }
 
 function sortByPpt() {
   changeSortFunc(compareByPpt, true)
-  sortList()
+  sortDisplayed()
 }
 
 function lookupSortAttributes(compFunc) {
@@ -134,9 +137,12 @@ function lookupSortAttributes(compFunc) {
   }
 }
 
-function update() {
-  findPlays()
-  sortList()
+function update(resetList = true) {
+  if (resetList) {
+    findPlays()
+  }
+  filterDisplayed()
+  sortDisplayed()
 }
 
 defineExpose({
@@ -218,14 +224,14 @@ defineExpose({
           class="grid grid-cols-5 font-mono hover:bg-slate-300"
           @mouseover="$emit('viewCandidate', play)"
           @click="$emit('playCandidate', play)"
-          v-for="(play, index) in validPlays"
+          v-for="(play, index) in displayedPlays"
           :key="index"
         >
           <span class="px-1">{{ play.tiles.replace(/ /g, '.') }}</span>
           <span class="px-1">{{ play.direction === 0 ? 'Across' : 'Down' }}</span>
           <span class="px-1">{{ play.points }}</span>
           <span class="px-1">{{ play.numTiles }}</span>
-          <span class="px-1">{{ (play.points / play.numTiles).toFixed(3) }}</span>
+          <span class="px-1">{{ (play.points / play.numTiles).toFixed(2) }}</span>
         </div>
       </div>
     </div>
