@@ -18,15 +18,12 @@ function borderColor(active, temp, height) {
   } else if (height > 0) {
     switch (height) {
       case 1:
-        return 'border-gray-400'
       case 2:
-        return 'border-gray-400'
       case 3:
         return 'border-gray-500'
       case 4:
-        return 'border-gray-700'
       case 5:
-        return 'border-gray-900'
+        return 'border-gray-700'
     }
   } else {
     return 'border-transparent'
@@ -58,7 +55,7 @@ function tileShadowColor(height, active) {
 function tileShadowStyle(height, active) {
   switch (height) {
     case 1:
-      return 'z-10 shadow-[0_0px_3px_-1px]'
+      return 'z-10 shadow-[0_0px_2px_-1px]'
     case 2:
       return 'z-20 shadow-[0_3px_3px_-1px]'
     case 3:
