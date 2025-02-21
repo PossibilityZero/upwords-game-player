@@ -45,23 +45,30 @@ function borderColorOuter(active, temp, height) {
   }
 }
 
-function tileShadow(height, active) {
+function tileShadowColor(height, active) {
   if (active) {
-    return 'z-30 shadow-blue-600 shadow-[0_0px_8px_-2px]'
+    return 'shadow-blue-600'
+  } else if (height > 0) {
+    return 'shadow-gray-800'
+  } else {
+    return ''
   }
+}
+
+function tileShadowStyle(height, active) {
   switch (height) {
     case 1:
-      return 'shadow-sm shadow-gray-100'
+      return 'z-10 shadow-[0_0px_3px_-1px]'
     case 2:
-      return 'shadow shadow-gray-400'
+      return 'z-20 shadow-[0_3px_3px_-1px]'
     case 3:
-      return 'shadow shadow-gray-500'
+      return 'z-30 shadow-[0_6px_3px_-1px]'
     case 4:
-      return 'shadow shadow-gray-700'
+      return 'z-40 shadow-[0_8px_3px_-1px]'
     case 5:
-      return 'shadow-md shadow-gray-800'
+      return 'z-50 shadow-[0_11px_3px_-1px]'
     default:
-      return ''
+      return active ? 'shadow-[0_0px_8px_-2px]' : ''
   }
 }
 
@@ -98,11 +105,11 @@ function backgroundColor(isFilter) {
   } else {
     switch (props.filterType) {
       case 'only':
-        return 'bg-amber-400/20'
+        return 'bg-amber-100'
       case 'exclude':
-        return 'bg-red-400/30'
+        return 'bg-rose-200'
       case 'include':
-        return 'bg-lime-600/20'
+        return 'bg-emerald-100'
       default:
         return 'bg-slate-100'
     }
@@ -120,16 +127,35 @@ function arrowDown(active, horizontal) {
     return 'hidden'
   }
 }
+
+function bottomOffset(height) {
+  switch (height) {
+    case 1:
+      return ''
+    case 2:
+      return 'bottom-[3px]'
+    case 3:
+      return 'bottom-[6px]'
+    case 4:
+      return 'bottom-[9px]'
+    case 5:
+      return 'bottom-[12px]'
+    default:
+      return ''
+  }
+}
 </script>
 
 <template>
   <div
-    class="text-center aspect-square border select-none"
+    class="text-center aspect-square border select-none relative"
     :class="`
-      ${tileShadow(height, active)}
+      ${tileShadowColor(height, active)}
+      ${tileShadowStyle(height, active)}
       ${borderStyle(height)}
       ${borderColorOuter(active, temp, height)}
-      ${backgroundColor(isFilter)}`"
+      ${backgroundColor(isFilter, height)}
+      ${bottomOffset(height)}`"
   >
     <div class="border-2" :class="`${borderStyle(height)} ${borderColor(active, temp, height)}`">
       <div class="grid grid-cols-5 grid-rows-5 aspect-square">
