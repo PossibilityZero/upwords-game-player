@@ -31,7 +31,7 @@ function startNewGame(playerCount) {
 function loadGame(serialized) {
   game.loadGameFromSerialized(serialized)
   automaticDraw.value = game.automaticDraw
-  refreshGameComponents()
+  resetAllComponents(false)
 }
 
 function updateAutoDraw() {
@@ -227,8 +227,10 @@ function refreshGameComponents() {
   playerDisplayRef.value.update()
 }
 
-function resetAllComponents() {
-  filterTiles.clear()
+function resetAllComponents(resetFilters = true) {
+  if (resetFilters) {
+    filterTiles.clear()
+  }
   playerDisplayRef.value.reset()
   saveManagerRef.value.reset()
   refreshGameComponents()
