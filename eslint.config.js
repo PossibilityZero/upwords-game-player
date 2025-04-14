@@ -12,7 +12,12 @@ export default [
     name: 'app/files-to-ignore',
     ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
   },
-
+  {
+    extends: ['plugin:vitest-globals/recommended'],
+    env: {
+      'vitest-globals/env': true,
+    },
+  },
   js.configs.recommended,
   ...pluginVue.configs['flat/essential'],
   skipFormatting,
