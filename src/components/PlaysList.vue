@@ -3,6 +3,7 @@ import { reactive } from 'vue'
 import { UpwordsWordFinder } from 'upwords-solver'
 import { wordList } from '../wordList'
 import SvgSortIcon from './svgIcons/SvgSortIcon.vue'
+import SvgArrowIcon from './svgIcons/SvgArrowIcon.vue'
 import { UBFHelper } from 'upwords-toolkit'
 
 const props = defineProps({
@@ -201,15 +202,14 @@ defineExpose({
       </label>
     </div>
     <div
-      class="overflow-hidden rounded-lg bg-slate-200 w-[32rem] xl:w-[40rem] max-h-[50vh] xl:min-h-[45vh] select-none"
+      class="overflow-hidden rounded-lg bg-slate-200 select-none"
       @mouseleave="$emit('clearCandidate')"
     >
-      <div class="grid grid-cols-5 text-lg bg-slate-300">
-        <div><span class="pl-1">Word</span></div>
-        <div><span>Direction</span></div>
+      <div class="grid grid-cols-[2fr_1fr_1fr_1fr] text-lg bg-slate-300">
+        <div><span title="Word created" class="pl-1">Word</span></div>
         <div @click="sortByPoints" class="px-1 hover:bg-slate-400">
-          <span
-            >Points
+          <span title="Points"
+            >Pts
             <SvgSortIcon
               class="inline-block size-6"
               v-bind="lookupSortAttributes(compareByPoints)"
@@ -217,7 +217,7 @@ defineExpose({
           </span>
         </div>
         <div @click="sortByTiles" class="px-1 hover:bg-slate-400">
-          <span
+          <span title="Number of tiles"
             >Tiles
             <SvgSortIcon
               class="inline-block size-6"
@@ -226,23 +226,25 @@ defineExpose({
           </span>
         </div>
         <div @click="sortByPpt" class="px-1 hover:bg-slate-400">
-          <span
-            >Points / tile
+          <span title="Points per tile"
+            >PPT
             <SvgSortIcon class="inline-block size-6" v-bind="lookupSortAttributes(compareByPpt)" />
           </span>
         </div>
       </div>
-      <div id="playsList" class="w-100% text-lg overflow-y-scroll no-scrollbar max-h-[45vh]">
+      <div id="playsList" class="max-h-[45vh] text-lg overflow-y-scroll no-scrollbar">
         <div
-          class="playsListItem grid grid-cols-5 font-mono hover:bg-slate-300"
+          class="playsListItem grid grid-cols-[2fr_1fr_1fr_1fr] font-mono hover:bg-slate-300"
           @mouseover="$emit('viewCandidate', play)"
           @click="$emit('playCandidate', play)"
           v-for="(play, index) in displayedPlays"
           v-bind:data-list-index="index"
           :key="index"
         >
-          <span class="px-1">{{ play.tiles.replace(/ /g, '.') }}</span>
-          <span class="px-1">{{ play.direction === 0 ? 'Across' : 'Down' }}</span>
+          <span class="px-1">
+            <SvgArrowIcon :show="true" :across="play.direction === 0" />
+            {{ play.tiles.replace(/ /g, '.') }}
+          </span>
           <span class="px-1">{{ play.points }}</span>
           <span class="px-1">{{ play.numTiles }}</span>
           <span class="px-1">{{ (play.points / play.numTiles).toFixed(2) }}</span>

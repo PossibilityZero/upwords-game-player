@@ -14,27 +14,26 @@ const displayLetters = props.showAllLetters
 </script>
 
 <template>
-  <div
-    id="tile-bag-container"
-    class="container p-2 rounded-xl bg-zinc-200 w-96 xl:min-h-[5rem] max-h-[20rem]"
-  >
+  <div id="tile-bag-container" class="container p-2 rounded-xl bg-zinc-200">
     <div class="flex">
       <h2 class="text-3xl mb-2">{{ title }}</h2>
-      <span class="text-right grow text-xl">Remaining tiles: {{ tileBag.tileCount }}</span>
+      <span class="text-right grow text-xl">Count: {{ tileBag.tileCount }}</span>
     </div>
-    <span
-      v-for="letter in displayLetters"
-      v-bind:key="letter"
-      class="inline-block font-mono pr-4 text-3xl"
-      :class="tileBag.getLetter(letter) > 0 ? '' : 'opacity-30'"
-    >
-      <span class="font-bold">{{ letter }} </span>
+    <div class="flex flex-wrap justify-start">
       <span
-        class="pl-1 pr-6 text-base"
-        :class="tileBag.getLetter(letter) > 0 ? 'text-gray-600' : 'text-red-600'"
-        >{{ tileBag.getLetter(letter) }}</span
+        v-for="letter in displayLetters"
+        v-bind:key="letter"
+        class="inline-block font-mono px-3 text-3xl"
+        :class="tileBag.getLetter(letter) > 0 ? '' : 'opacity-30'"
       >
-    </span>
+        <span class="font-bold">{{ letter }} </span>
+        <span
+          class="pl-1 text-base"
+          :class="tileBag.getLetter(letter) > 0 ? 'text-gray-600' : 'text-red-600'"
+          >{{ tileBag.getLetter(letter) }}</span
+        >
+      </span>
+    </div>
   </div>
 </template>
 

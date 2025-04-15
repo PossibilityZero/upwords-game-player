@@ -112,7 +112,7 @@ defineExpose({
 
 <template>
   <div
-    class="grid place-content-center rounded-lg px-1 grid-cols-7 gap-1 h-20"
+    class="grid place-content-center rounded-lg py-1 sm:py-2 px-1 grid-cols-7 gap-1"
     :class="active ? 'bg-blue-200' : 'bg-zinc-200'"
   >
     <RackTile

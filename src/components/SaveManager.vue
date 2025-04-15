@@ -160,20 +160,28 @@ defineExpose({ reset })
     </form>
 
     <div>
-      <div class="my-2" v-for="(saved, index) in savedGames" :key="index">
+      <div
+        class="flex flex-nowrap max-w-100 items-center my-2"
+        v-for="(saved, index) in savedGames"
+        :key="index"
+      >
         <button
-          class="px-1 mr-2 bg-slate-200 rounded hover:cursor-pointer"
+          class="inline-block px-1 mr-2 bg-slate-200 rounded hover:cursor-pointer"
           @click="loadGame(saved)"
         >
           <SvgLoadIcon />
         </button>
         <button
-          class="px-1 mr-2 bg-slate-200 rounded hover:cursor-pointer"
+          class="inline-block px-1 mr-2 bg-slate-200 rounded hover:cursor-pointer"
           @click="deleteSave(saved)"
         >
           <SvgDeleteIcon />
         </button>
-        <span class="font-bold mr-2 text-lg">{{ saved }}</span>
+        <span
+          :title="saved"
+          class="whitespace-nowrap overflow-hidden text-ellipsis font-bold mr-2 text-lg"
+          >{{ saved }}</span
+        >
       </div>
     </div>
   </div>

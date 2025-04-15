@@ -165,7 +165,7 @@ defineExpose({
 <template>
   <div
     id="board-container"
-    class="mx-auto w-5/6 min-w-80 max-w-3xl aspect-square border-2 rounded-lg border-gray-400 px-2 py-2"
+    class="mx-auto w-full aspect-square border-2 rounded-lg border-gray-400 px-2 py-2"
   >
     <div class="grid grid-cols-10 grid-rows-10 gap-1 aspect-square content-between">
       <BoardTile

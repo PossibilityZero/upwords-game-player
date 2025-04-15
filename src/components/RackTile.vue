@@ -34,9 +34,9 @@ function letterColor(temp) {
 
 function letterSize(letter) {
   if (letter !== 'Q') {
-    return 'sm:font-bold text-base sm:text-xl md:text-3xl lg:text-4xl '
+    return 'font-bold text-xl sm:text-3xl lg:text-3xl 2xl:text-4xl'
   } else {
-    return 'sm:font-bold text-base sm:text-lg md:text-2xl lg:text-3xl '
+    return 'font-bold text-lg sm:text-2xl lg:text-2xl 2xl:text-3xl'
   }
 }
 </script>
@@ -51,7 +51,7 @@ function letterSize(letter) {
     <div class="border-2 rounded md:rounded-lg" :class="`${borderColor(active, temp)}`">
       <div class="grid grid-cols-5 grid-rows-5 aspect-square">
         <div
-          class="row-start-2 col-start-2 row-span-3 col-span-3 align-middle"
+          class="leading-none row-start-2 col-start-2 row-span-3 col-span-3"
           :class="`${letterSize(letter)} ${letterColor(temp)}`"
         >
           {{ letter === 'Q' ? 'Qu' : letter }}

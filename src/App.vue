@@ -247,9 +247,9 @@ document.body.classList.add('bg-slate-100')
       </h1>
     </nav>
   </header>
-  <main>
+  <main class="px-2">
     <div
-      class="xl:px-4 sm:mx-4 my-2 grid auto-rows-auto auto-cols-auto place-content-center gap-2 lg:gap-5"
+      class="max-w-[450px] sm:container mx-auto my-2 grid grid-flow-row grid-cols-1 lg:grid-cols-[2fr_3fr] 2xl:grid-cols-[2fr_4fr_2fr] place-content-center gap-2"
     >
       <BoardContainer
         :board="game.getUBF()"
@@ -257,11 +257,11 @@ document.body.classList.add('bg-slate-100')
         :filterTiles="filterTiles"
         :filterType="filterType"
         ref="boardContainerRef"
-        class="row-start-1 row-span-2 2xl:w-[48rem] mx-auto md:row-start-1 md:col-start-2"
+        class="row-start-1 row-span-2 mx-auto row-start-1 lg:col-start-2"
         @grab-focus="focusBoard"
         @toggle-filter-tile="toggleFilterTile"
       />
-      <div class="xl:col-start-2 xl:row-start-3">
+      <div class="lg:col-start-2 2xl:col-start-2 2xl:row-start-3">
         <button
           class="bg-slate-300 rounded-md px-2 py-1 mr-2 hover:bg-slate-400 hover:cursor-pointer"
           @click="skipTurn"
@@ -298,7 +298,7 @@ document.body.classList.add('bg-slate-100')
         </div>
       </div>
       <PlayerDisplay
-        class="container mx-auto max-w-lg min-w-64 row-span-1 lg:w-[20rem] 2xl:w-[32rem] md:col-start-2"
+        class="mx-auto max-w-2/3 row-span-1 w-full lg:col-start-2"
         :game="game"
         ref="playerDisplayRef"
         @grab-focus="focusTileRack"
@@ -307,7 +307,7 @@ document.body.classList.add('bg-slate-100')
       />
       <PlaysList
         ref="playListRef"
-        class="xl:col-start-1 xl:row-start-1 xl:row-span-2"
+        class="lg:col-start-1 lg:row-start-1 2xl:col-start-1 2xl:row-start-1"
         :game="game"
         :filterTiles="filterTiles"
         v-model="filterType"
@@ -316,32 +316,31 @@ document.body.classList.add('bg-slate-100')
         @play-candidate="placeCandidate"
         @clear-candidate="clearCandidateFromPlayList"
       />
-      <SaveManager
-        ref="saveManagerRef"
-        class="xl:col-start-3 xl:row-start-3 row-span-3"
-        :game="game"
-        @new-game="startNewGame"
-        @load-game="loadGame"
-      />
-      <div class="xl:col-start-3 xl:row-start-1 xl:row-span-2">
+      <div class="col-start-1 row-span-2 lg:row-start-3 2xl:col-start-3 2xl:row-start-1">
         <TileBagContainer
           v-bind:key="tileBagKey"
           :tile-bag="game.getTileBag()"
           :show-all-letters="true"
-          class="container"
         />
         <ReservedTilesControls
-          class="mt-2"
+          class="mt-3"
           :game="game"
           @reserved-tiles-updated="refreshTileBags"
         />
         <TileBagContainer
           v-bind:key="reservedTileBagKey"
           :tile-bag="game.getReservedTiles()"
-          :override-title="'Reserved tiles'"
-          class="container mt-4"
+          :override-title="'Reserved'"
+          class="mt-3"
         />
       </div>
+      <SaveManager
+        ref="saveManagerRef"
+        class="col-start-1 2xl:col-start-3"
+        :game="game"
+        @new-game="startNewGame"
+        @load-game="loadGame"
+      />
     </div>
   </main>
 </template>
