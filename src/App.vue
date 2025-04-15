@@ -243,7 +243,7 @@ document.body.classList.add('bg-slate-100')
   <header class="bg-slate-200">
     <nav class="px-5 py-3 flex items-center space-x-12">
       <h1 class="text-3xl text-slate-800 font-extrabold leading-none">
-        <a href="/">Upwords Game</a>
+        <a href="/">Upwords Tools</a>
       </h1>
     </nav>
   </header>
