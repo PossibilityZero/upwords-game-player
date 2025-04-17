@@ -240,13 +240,6 @@ document.body.classList.add('bg-slate-100')
 </script>
 
 <template>
-  <header class="bg-slate-200">
-    <nav class="px-5 py-3 flex items-center space-x-12">
-      <h1 class="text-3xl text-slate-800 font-extrabold leading-none">
-        <a href="/">Upwords Tools</a>
-      </h1>
-    </nav>
-  </header>
   <main class="px-2">
     <div
       class="max-w-[450px] sm:container mx-auto my-2 grid grid-flow-row grid-cols-1 lg:grid-cols-[2fr_3fr] 2xl:grid-cols-[2fr_4fr_2fr] place-content-center gap-2"
