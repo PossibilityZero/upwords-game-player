@@ -242,7 +242,7 @@ defineExpose({
           :key="index"
         >
           <span class="px-1">
-            <SvgArrowIcon :show="true" :across="play.direction === 0" />
+            <SvgArrowIcon class="inline-block" :across="play.direction === 0" />
             {{ play.tiles.replace(/ /g, '.') }}
           </span>
           <span class="px-1">{{ play.points }}</span>

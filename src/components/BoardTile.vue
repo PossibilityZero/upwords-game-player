@@ -162,9 +162,10 @@ function bottomOffset(height) {
           {{ height > 0 ? height : '' }}
         </div>
         <SvgArrowIcon
-          :show="active"
+          class="z-100"
+          :class="`${active ? 'inline-block' : 'hidden'}`"
           :across="inputHorizontal"
-          :color-override="'rgb(150 150 150)'"
+          :color-override="'rgb(100 100 100)'"
         />
       </div>
     </div>
