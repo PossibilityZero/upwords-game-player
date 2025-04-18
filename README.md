@@ -1,6 +1,11 @@
 # upwords-game-player
 
-This template should help get you started developing with Vue 3 in Vite.
+Vue SPA for Upwords toolkit
+
+upwords.possibilityzero.com
+
+- [Upwords Toolkit](https://github.com/PossibilityZero/upwords-toolkit)
+- [Upwords Solver](https://github.com/PossibilityZero/upwords-solver)
 
 ## Recommended IDE Setup
 
