@@ -9,7 +9,6 @@ import { ref } from 'vue'
 import { PlayDirection, UBFHelper, UpwordsGame, TileSet } from 'upwords-toolkit'
 import { wordList } from './wordList'
 
-console.log('Game loaded')
 const game = new UpwordsGame(wordList, 2, true)
 const automaticDraw = ref(false)
 const tileBagKey = ref(0)
@@ -53,7 +52,7 @@ function playMove(play) {
     }
   }
   if (!game.checkMove(play).isValid) {
-    console.log(game.checkMove(play))
+    console.debug(game.checkMove(play))
     game.returnSpecificTiles(game.currentPlayer, play.tiles)
     game.drawSpecificTiles(game.currentPlayer, currentTilesString)
   } else {
