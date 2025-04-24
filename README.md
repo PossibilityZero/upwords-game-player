@@ -2,7 +2,9 @@
 
 Vue SPA for Upwords toolkit
 
-upwords.possibilityzero.com
+See published project here: [upwords.possibilityzero.com](upwords.possibilityzero.com)
+
+Libraries:
 
 - [Upwords Toolkit](https://github.com/PossibilityZero/upwords-toolkit)
 - [Upwords Solver](https://github.com/PossibilityZero/upwords-solver)

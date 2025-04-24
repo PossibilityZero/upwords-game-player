@@ -36,6 +36,28 @@
         be only a part of finding the solution, albeit an important tool.
       </p>
       <p>
+        You can see the code for this web app, along with the libraries that I built for it below on
+        GitHub:
+      </p>
+      <ul class="list-inside">
+        <li class="list-disc">
+          <a href="https://github.com/PossibilityZero/upwords-toolkit">Upwords Toolkit</a> (Engine)
+          <p class="ml-4">A library for playing the Upwords game.</p>
+        </li>
+        <li class="list-disc">
+          <a href="https://github.com/PossibilityZero/upwords-solver">Upwords Solver</a> (Solver)
+          <p class="ml-4">
+            The "brains" of the app, this is what powers the "plays list" and figures out every
+            possible play from a given board state
+          </p>
+        </li>
+        <li class="list-disc">
+          <a href="https://github.com/PossibilityZero/upwords-game-player">Upwords Game Player</a>
+          (Vue Web App)
+          <p class="ml-4">This frontend Vue app which ties together the engine and solver.</p>
+        </li>
+      </ul>
+      <p>
         I'm detailing the development process on <a href="https://possibilityzero.com">my blog</a>,
         if you're interested please have a look there.
       </p>
