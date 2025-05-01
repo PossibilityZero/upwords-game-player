@@ -1,4 +1,5 @@
 <script setup>
+import { inject } from 'vue'
 import SvgArrowIcon from './svgIcons/SvgArrowIcon.vue'
 
 const props = defineProps({
@@ -9,8 +10,9 @@ const props = defineProps({
   filterType: String,
   central: Boolean,
   temp: Boolean,
-  inputHorizontal: Boolean,
 })
+
+const inputHorizontal = inject('inputHorizontal')
 
 function borderColor(active, temp, height) {
   if (active) {
@@ -84,7 +86,7 @@ function letterSize(letter, central, height) {
   } else if (letter !== 'Q') {
     return 'font-bold text-xl sm:text-3xl lg:text-3xl 2xl:text-4xl'
   } else {
-    return 'font-bold text-lg sm:text-2xl lg:text-2xl 2xl:text-3xl'
+    return 'font-bold text-base sm:text-2xl lg:text-2xl 2xl:text-3xl'
   }
 }
 
@@ -162,8 +164,8 @@ function bottomOffset(height) {
           {{ height > 0 ? height : '' }}
         </div>
         <SvgArrowIcon
-          class="z-100"
-          :class="`${active ? 'inline-block' : 'hidden'}`"
+          class="z-60"
+          :class="`${active ? 'hidden sm:inline-block' : 'hidden'}`"
           :across="inputHorizontal"
           :color-override="'rgb(100 100 100)'"
         />

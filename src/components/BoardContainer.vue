@@ -1,12 +1,11 @@
 <script setup>
 import BoardTile from './BoardTile.vue'
 import { UBFHelper as UBF } from 'upwords-toolkit'
-import { reactive } from 'vue'
+import { inject, reactive } from 'vue'
 
-const [HORZ, VERT] = [Symbol('horizontal'), Symbol('vertical')]
-let inputDirection = HORZ
+const inputHorizontal = inject('inputHorizontal')
 function toggleInputDirection() {
-  inputDirection = inputDirection === HORZ ? VERT : HORZ
+  inputHorizontal.value = !inputHorizontal.value
 }
 
 const props = defineProps({
@@ -19,6 +18,7 @@ const props = defineProps({
 const emit = defineEmits(['grabFocus', 'toggleFilterTile'])
 
 const tempTiles = props.tempTiles
+const tempPlay = inject('tempPlay')
 const filterTiles = props.filterTiles
 
 const xCoord = (tileNum) => Math.floor(tileNum / 10)
@@ -71,25 +71,31 @@ function moveActiveTileDown(activeTile) {
 }
 
 function handleBoardInput(key) {
+  if (key === 'Escape') {
+    tempTiles.size > 0 ? tempTiles.clear() : deactivateAllTiles()
+    tempPlay.value = false
+  }
+
   const activeTile = boardTiles.find((tile) => tile.active)
   if (!activeTile) {
     return
   }
 
   const letter = key.toUpperCase()
-  if (key === 'Escape') {
-    tempTiles.size > 0 ? tempTiles.clear() : deactivateAllTiles()
-  } else if (key === 'Tab') {
+  if (key === 'Tab') {
     toggleInputDirection()
   } else if (key === 'Backspace') {
     if (tempTiles.has(activeTile.coordString)) {
       tempTiles.delete(activeTile.coordString)
     } else {
-      inputDirection === HORZ ? moveActiveTileLeft(activeTile) : moveActiveTileUp(activeTile)
+      inputHorizontal.value ? moveActiveTileLeft(activeTile) : moveActiveTileUp(activeTile)
       tempTiles.delete(boardTiles.find((tile) => tile.active).coordString)
     }
+    if (tempTiles.size === 0) {
+      tempPlay.value = false
+    }
   } else if (key === ' ') {
-    inputDirection === HORZ ? moveActiveTileRight(activeTile) : moveActiveTileDown(activeTile)
+    inputHorizontal.value ? moveActiveTileRight(activeTile) : moveActiveTileDown(activeTile)
   } else if (key.startsWith('Arrow')) {
     switch (key) {
       case 'ArrowUp':
@@ -108,10 +114,11 @@ function handleBoardInput(key) {
   } else if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(letter)) {
     if (activeTile.currentHeight < 5 && activeTile.currentLetter !== letter) {
       tempTiles.set(activeTile.coordString, { letter, x: activeTile.x, y: activeTile.y })
-      inputDirection === HORZ ? moveActiveTileRight(activeTile) : moveActiveTileDown(activeTile)
+      inputHorizontal.value ? moveActiveTileRight(activeTile) : moveActiveTileDown(activeTile)
+      tempPlay.value = true
     } else if (activeTile.currentLetter === letter) {
       tempTiles.delete(activeTile.coordString)
-      inputDirection === HORZ ? moveActiveTileRight(activeTile) : moveActiveTileDown(activeTile)
+      inputHorizontal.value ? moveActiveTileRight(activeTile) : moveActiveTileDown(activeTile)
     }
   }
   activeTile.key++
@@ -151,11 +158,22 @@ function update() {
   }
 }
 
+function getActiveTileCoords() {
+  const activeTile = boardTiles.find((tile) => tile.active)
+  if (activeTile) {
+    return {
+      x: activeTile.x,
+      y: activeTile.y,
+    }
+  }
+}
+
 function unfocus() {
   deactivateAllTiles()
 }
 
 defineExpose({
+  getActiveTileCoords,
   handleBoardInput,
   unfocus,
   update,
@@ -179,7 +197,6 @@ defineExpose({
         :isFilter="tile.isFilter"
         :filterType="props.filterType"
         :temp="tile.isTemp"
-        :inputHorizontal="inputDirection === HORZ"
         :central="[44, 45, 54, 55].includes(index)"
         v-bind:data-tile-num="index"
         v-bind:data-tile-x="xCoord(index)"

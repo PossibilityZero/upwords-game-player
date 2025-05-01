@@ -5,7 +5,8 @@ import ReservedTilesControls from './components/ReservedTilesControls.vue'
 import PlayerDisplay from './components/PlayerDisplay.vue'
 import PlaysList from './components/PlaysList.vue'
 import SaveManager from './components/SaveManager.vue'
-import { ref } from 'vue'
+import TouchControls from './components/TouchControls.vue'
+import { provide, ref } from 'vue'
 import { PlayDirection, UBFHelper, UpwordsGame, TileSet } from 'upwords-toolkit'
 import { wordList } from './wordList'
 
@@ -13,7 +14,6 @@ const game = new UpwordsGame(wordList, 2, true)
 const automaticDraw = ref(false)
 const tileBagKey = ref(0)
 const reservedTileBagKey = ref(0)
-let tempDisplayFromPlayList = false
 const tempTiles = new Map()
 const filterType = ref('only')
 const filterTiles = new Set()
@@ -21,6 +21,10 @@ const saveManagerRef = ref(null)
 const boardContainerRef = ref(null)
 const playerDisplayRef = ref(null)
 const playListRef = ref(null)
+const inputHorizontal = ref(true)
+const tempPlay = ref(false)
+provide('inputHorizontal', inputHorizontal)
+provide('tempPlay', tempPlay)
 
 function startNewGame(playerCount) {
   const newGameState = new UpwordsGame(wordList, playerCount, !automaticDraw.value).serialize()
@@ -39,6 +43,7 @@ function updateAutoDraw() {
 }
 
 function playMove(play) {
+  tempPlay.value = false
   const playTiles = TileSet.tilesFromString(play.tiles)
   const currentPlayerRack = game.getTiles(game.currentPlayer)
   const currentTilesString = currentPlayerRack.listTiles()
@@ -83,28 +88,30 @@ function undoTurn() {
   refreshGameComponents()
 }
 
+function playTempTiles() {
+  const play = makePlayFromTempTiles(tempTiles)
+  if (play) {
+    playMove(play)
+  }
+}
+
 function makePlayFromTempTiles(tempTiles) {
   const play = {}
-  const xCoords = tempTiles.values().map((tile) => tile.x)
-  const yCoords = tempTiles.values().map((tile) => tile.y)
+  const tempTileValues = Array.from(tempTiles.values())
+  const xCoords = tempTileValues.map((tile) => tile.x)
+  const yCoords = tempTileValues.map((tile) => tile.y)
   let ordered
   const tiles = Array(10).fill(' ')
   if (new Set(xCoords).size === 1) {
     play.direction = PlayDirection.Horizontal
-    ordered = tempTiles
-      .values()
-      .toArray()
-      .sort((tileA, tileB) => tileA.y - tileB.y)
-    tempTiles.values().forEach((tile) => {
+    ordered = tempTileValues.slice().sort((tileA, tileB) => tileA.y - tileB.y)
+    tempTileValues.forEach((tile) => {
       tiles[tile.y] = tile.letter
     })
   } else if (new Set(yCoords).size === 1) {
     play.direction = PlayDirection.Vertical
-    ordered = tempTiles
-      .values()
-      .toArray()
-      .sort((tileA, tileB) => tileA.x - tileB.x)
-    tempTiles.values().forEach((tile) => {
+    ordered = tempTileValues.slice().sort((tileA, tileB) => tileA.x - tileB.x)
+    tempTileValues.forEach((tile) => {
       tiles[tile.x] = tile.letter
     })
   } else {
@@ -131,10 +138,7 @@ document.addEventListener('keydown', (e) => {
     boardContainerRef.value.handleBoardInput(e.key)
   } else if (e.key === 'Enter') {
     e.preventDefault()
-    const play = makePlayFromTempTiles(tempTiles)
-    if (play) {
-      playMove(play)
-    }
+    playTempTiles()
   } else if (e.key === 'Tab') {
     e.preventDefault()
     boardContainerRef.value.handleBoardInput(e.key)
@@ -146,7 +150,6 @@ function placeCandidate(play) {
 }
 
 function viewCandidate(play) {
-  tempDisplayFromPlayList = true
   tempTiles.clear()
   for (let i = 0; i < play.tiles.length; i++) {
     const tile = play.tiles[i]
@@ -156,15 +159,8 @@ function viewCandidate(play) {
       tempTiles.set(coordString, { letter: tile.toUpperCase(), x, y })
     }
   }
+  tempPlay.value = true
   boardContainerRef.value.update()
-}
-
-function clearCandidateFromPlayList() {
-  if (tempDisplayFromPlayList) {
-    tempTiles.clear()
-    boardContainerRef.value.update()
-    tempDisplayFromPlayList = false
-  }
 }
 
 function drawTile(player, tile, returnTile = '') {
@@ -219,6 +215,7 @@ function refreshTileBags() {
 }
 
 function refreshGameComponents() {
+  tempPlay.value = false
   tempTiles.clear()
   boardContainerRef.value.update()
   tileBagKey.value++
@@ -236,11 +233,46 @@ function resetAllComponents(resetFilters = true) {
   refreshGameComponents()
 }
 
-document.body.classList.add('bg-slate-100')
+function passOnDummyInput(e) {
+  e.preventDefault()
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: e.key, metaKey: e.metaKey }))
+}
+
+function toggleFocusDummyInput() {
+  const dummyInput = document.getElementById('dummyInput')
+  if (dummyInput) dummyInput.focus()
+}
+
+function emulateBoardEscape() {
+  boardContainerRef.value.handleBoardInput('Escape')
+}
+
+function flagSquare() {
+  const coords = boardContainerRef.value.getActiveTileCoords()
+  if (coords) toggleFilterTile(coords.x, coords.y)
+}
+
+function showInfoOverlay() {
+  alert('Keyboard controls\n\nEsc: clear board\nShift-click: toggle tile filter\n')
+}
 </script>
 
 <template>
   <main class="px-2">
+    <input
+      id="dummyInput"
+      @keydown="passOnDummyInput"
+      class="fixed w-0 h-0 outline-none focus:border-none caret-transparent"
+    />
+    <TouchControls
+      class="fixed h-15 w-60 top-0 right-0 z-1000"
+      @clear-play="emulateBoardEscape"
+      @confirm-play="playTempTiles"
+      @show-keyboard="toggleFocusDummyInput"
+      @flag-square="flagSquare"
+      @show-info="showInfoOverlay"
+      :tempPlay="tempPlay"
+    />
     <div
       class="max-w-[450px] sm:container mx-auto my-2 grid grid-flow-row grid-cols-1 lg:grid-cols-[2fr_3fr] 2xl:grid-cols-[2fr_4fr_2fr] place-content-center gap-2"
     >
@@ -307,7 +339,6 @@ document.body.classList.add('bg-slate-100')
         @clear-filter="clearFilter"
         @view-candidate="viewCandidate"
         @play-candidate="placeCandidate"
-        @clear-candidate="clearCandidateFromPlayList"
       />
       <div class="col-start-1 row-span-2 lg:row-start-3 2xl:col-start-3 2xl:row-start-1">
         <TileBagContainer

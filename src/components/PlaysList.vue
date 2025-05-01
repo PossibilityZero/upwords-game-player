@@ -201,10 +201,7 @@ defineExpose({
         />
       </label>
     </div>
-    <div
-      class="overflow-hidden rounded-lg bg-slate-200 select-none"
-      @mouseleave="$emit('clearCandidate')"
-    >
+    <div class="overflow-hidden rounded-lg bg-slate-200 select-none">
       <div class="grid grid-cols-[2fr_1fr_1fr_1fr] text-lg bg-slate-300">
         <div><span title="Word created" class="pl-1">Word</span></div>
         <div @click="sortByPoints" class="px-1 hover:bg-slate-400">
