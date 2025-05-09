@@ -17,4 +17,13 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
   },
+  server: {
+    proxy: {
+      '/wordlist': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

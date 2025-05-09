@@ -8,10 +8,11 @@ import SaveManager from './components/SaveManager.vue'
 import TouchControls from './components/TouchControls.vue'
 import { provide, ref } from 'vue'
 import { PlayDirection, UBFHelper, UpwordsGame, TileSet } from 'upwords-toolkit'
-import { wordList } from './wordList'
+import { wordListManager } from './wordList'
 
-const game = new UpwordsGame(wordList, 2, true)
-const automaticDraw = ref(false)
+const wordList = await wordListManager.getWordlist()
+const automaticDraw = ref(true)
+const game = new UpwordsGame(wordList, 2, !automaticDraw.value)
 const tileBagKey = ref(0)
 const reservedTileBagKey = ref(0)
 const tempTiles = new Map()
@@ -25,6 +26,30 @@ const inputHorizontal = ref(true)
 const tempPlay = ref(false)
 provide('inputHorizontal', inputHorizontal)
 provide('tempPlay', tempPlay)
+provide('wordList', wordList)
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.metaKey) {
+    return
+  }
+  if (['Escape', 'Backspace'].includes(e.key)) {
+    playerDisplayRef.value.handleInput(e.key)
+    boardContainerRef.value.handleBoardInput(e.key)
+  } else if (e.key.startsWith('Arrow') || e.key === ' ') {
+    e.preventDefault()
+    playerDisplayRef.value.handleInput(e.key)
+    boardContainerRef.value.handleBoardInput(e.key)
+  } else if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(e.key.toUpperCase())) {
+    playerDisplayRef.value.handleInput(e.key)
+    boardContainerRef.value.handleBoardInput(e.key)
+  } else if (e.key === 'Enter') {
+    e.preventDefault()
+    playTempTiles()
+  } else if (e.key === 'Tab') {
+    e.preventDefault()
+    boardContainerRef.value.handleBoardInput(e.key)
+  }
+})
 
 function startNewGame(playerCount) {
   const newGameState = new UpwordsGame(wordList, playerCount, !automaticDraw.value).serialize()
@@ -121,29 +146,6 @@ function makePlayFromTempTiles(tempTiles) {
   play.tiles = tiles.join('').trim()
   return play
 }
-
-document.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'INPUT' || e.metaKey) {
-    return
-  }
-  if (['Escape', 'Backspace'].includes(e.key)) {
-    playerDisplayRef.value.handleInput(e.key)
-    boardContainerRef.value.handleBoardInput(e.key)
-  } else if (e.key.startsWith('Arrow') || e.key === ' ') {
-    e.preventDefault()
-    playerDisplayRef.value.handleInput(e.key)
-    boardContainerRef.value.handleBoardInput(e.key)
-  } else if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(e.key.toUpperCase())) {
-    playerDisplayRef.value.handleInput(e.key)
-    boardContainerRef.value.handleBoardInput(e.key)
-  } else if (e.key === 'Enter') {
-    e.preventDefault()
-    playTempTiles()
-  } else if (e.key === 'Tab') {
-    e.preventDefault()
-    boardContainerRef.value.handleBoardInput(e.key)
-  }
-})
 
 function placeCandidate(play) {
   playMove(play)

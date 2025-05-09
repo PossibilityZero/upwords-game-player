@@ -12,7 +12,7 @@ describe('default state', () => {
         showAllLetters: true,
       },
     })
-    getByText('Remaining tiles: 100')
+    getByText('Count: 100')
     getByText('Tile Bag')
   })
 

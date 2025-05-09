@@ -21,5 +21,10 @@ const currentView = computed(() => {
 </script>
 
 <template>
-  <component :is="currentView" />
+  <keep-alive>
+    <suspense>
+      <component :is="currentView" />
+      <template #fallback> <main class="px-2 py-2">Loading...</main> </template>
+    </suspense>
+  </keep-alive>
 </template>

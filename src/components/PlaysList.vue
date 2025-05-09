@@ -1,7 +1,6 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, inject } from 'vue'
 import { UpwordsWordFinder } from 'upwords-solver'
-import { wordList } from '../wordList'
 import SvgSortIcon from './svgIcons/SvgSortIcon.vue'
 import SvgArrowIcon from './svgIcons/SvgArrowIcon.vue'
 import { UBFHelper } from 'upwords-toolkit'
@@ -15,7 +14,6 @@ const emit = defineEmits(['clearFilter', 'viewCandidate', 'playCandidate', 'clea
 
 const filterType = defineModel()
 
-const game = props.game
 const filterSet = props.filterTiles
 const validPlays = []
 const displayedPlays = reactive([])
@@ -26,6 +24,13 @@ const compareByPpt = (a, b) => a.points / a.numTiles - b.points / b.numTiles
 function reverseSortFunc(compareFn) {
   return (a, b) => -compareFn(a, b)
 }
+
+;(function init() {
+  const wordList = inject('wordList')
+  UpwordsWordFinder.init(wordList)
+  sortFuncs.push({ fn: compareByPoints, reversed: true }, { fn: compareByPpt, reversed: true })
+  update()
+})()
 
 function composeSortFunctions(sortFuncArr) {
   return (a, b) => {
@@ -39,12 +44,6 @@ function composeSortFunctions(sortFuncArr) {
     return 0
   }
 }
-
-;(function init() {
-  UpwordsWordFinder.init(wordList)
-  sortFuncs.push({ fn: compareByPoints, reversed: true }, { fn: compareByPpt, reversed: true })
-  update()
-})()
 
 function coordToStr(coord) {
   const [x, y] = coord
@@ -64,10 +63,13 @@ function getPlayCoords(play) {
 
 function findPlays() {
   validPlays.length = 0
-  UpwordsWordFinder.findAllPossiblePlays(game.getUBF(), game.getTiles(game.currentPlayer))
+  UpwordsWordFinder.findAllPossiblePlays(
+    props.game.getUBF(),
+    props.game.getTiles(props.game.currentPlayer),
+  )
     .map((play) => ({
       play,
-      status: game.checkMove(play, true),
+      status: props.game.checkMove(play, true),
       numTiles: [...play.tiles].filter((t) => t !== ' ').length,
     }))
     .filter((play) => play.status.isValid)
